@@ -621,8 +621,7 @@ Y.extend(ANNOTATION, Y.Base, {
                 'alt': M.util.get_string('deleteannotation', 'assignfeedback_editpdf')
             });
             deleteicon.setStyles({
-                'backgroundColor' : 'white',
-                'border' : '2px solid ' + SELECTEDBORDERCOLOUR
+                'backgroundColor' : 'white'
             });
             deletelink.addClass('deleteannotationbutton');
             deletelink.append(deleteicon);
@@ -634,8 +633,8 @@ Y.extend(ANNOTATION, Y.Base, {
             deletelink.on('click', this.remove, this);
             deletelink.on('key', this.remove, 'space,enter', this);
 
-            deletelink.setX(offsetcanvas[0] + bounds.x + bounds.width - 20);
-            deletelink.setY(offsetcanvas[1] + bounds.y + 4);
+            deletelink.setX(offsetcanvas[0] + bounds.x + bounds.width - 18);
+            deletelink.setY(offsetcanvas[1] + bounds.y + 6);
             this.drawable.nodes.push(deletelink);
         }
         return this.drawable;
@@ -841,7 +840,9 @@ Y.extend(ANNOTATION, Y.Base, {
         for (i = 0; i < annotations.length; i++) {
             if (annotations[i] === this) {
                 annotations.splice(i, 1);
-                this.drawable.erase();
+                if (this.drawable) {
+                    this.drawable.erase();
+                }
                 this.editor.save_current_page();
                 return;
             }
@@ -879,7 +880,9 @@ Y.extend(ANNOTATION, Y.Base, {
             this.path = newpath.join(':');
 
         }
-        this.drawable.erase();
+        if (this.drawable) {
+            this.drawable.erase();
+        }
         this.editor.drawables.push(this.draw());
     },
 
@@ -894,6 +897,27 @@ Y.extend(ANNOTATION, Y.Base, {
         var noop = edit && false;
         // Override me please.
         return noop;
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect();
+        bounds.bound([edit.start, edit.end]);
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.endx = bounds.x + bounds.width;
+        this.endy = bounds.y + bounds.height;
+        this.colour = edit.annotationcolour;
+        this.path = '';
     }
 
 });
@@ -988,7 +1012,26 @@ Y.extend(ANNOTATIONLINE, M.assignfeedback_editpdf.annotation, {
         drawable.shapes.push(shape);
 
         return drawable;
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = edit.start.x;
+        this.y = edit.start.y;
+        this.endx = edit.end.x;
+        this.endy = edit.end.y;
+        this.colour = edit.annotationcolour;
+        this.path = '';
     }
+
 });
 
 M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
@@ -1268,7 +1311,37 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
         this.drawable = drawable;
 
         return ANNOTATIONPEN.superclass.draw.apply(this);
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect(),
+            pathlist = [],
+            i = 0;
+
+        // This will get the boundaries of all points in the path.
+        bounds.bound(edit.path);
+
+        for (i = 0; i < edit.path.length; i++) {
+            pathlist.push(edit.path[i].x + ',' + edit.path[i].y);
+        }
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.endx = bounds.x + bounds.width;
+        this.endy = bounds.y + bounds.height;
+        this.colour = edit.annotationcolour;
+        this.path = pathlist.join(':');
     }
+
 
 });
 
@@ -1386,7 +1459,29 @@ Y.extend(ANNOTATIONHIGHLIGHT, M.assignfeedback_editpdf.annotation, {
         drawable.shapes.push(shape);
 
         return drawable;
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect();
+        bounds.bound([edit.start, edit.end]);
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.endx = bounds.x + bounds.width;
+        this.endy = bounds.y + 16;
+        this.colour = edit.annotationcolour;
+        this.page = '';
     }
+
 });
 
 M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
@@ -2051,17 +2146,14 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         }
 
         position = this.editor.get_window_coordinates(new M.assignfeedback_editpdf.point(this.x, this.y));
-        container.setStyles({
-            position: 'absolute',
-            left: position.x + 'px',
-            top: position.y + 'px'
-        });
         node.setStyles({
             width: this.width + 'px',
             backgroundColor: COMMENTCOLOUR[this.colour]
         });
 
         drawingregion.append(container);
+        container.setX(position.x);
+        container.setY(position.y);
         drawable.nodes.push(container);
         node.set('value', this.rawtext);
         node.setStyle('height', node.get('scrollHeight') - 8 + 'px');
@@ -2139,7 +2231,7 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             nodewidth = parseInt(node.getStyle('width'), 10);
             nodeheight = parseInt(node.getStyle('height'), 10);
 
-            newlocation = this.editor.get_canvas_coordinates(new M.assignfeedback_editpdf.point(x, y), true);
+            newlocation = this.editor.get_canvas_coordinates(new M.assignfeedback_editpdf.point(x, y));
             bounds = this.editor.get_canvas_bounds(true);
             bounds.x = 0;
             bounds.y = 0;
@@ -2152,7 +2244,7 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             this.x = newlocation.x;
             this.y = newlocation.y;
 
-            windowlocation = this.editor.get_window_coordinates(newlocation, true);
+            windowlocation = this.editor.get_window_coordinates(newlocation);
             node.ancestor().setX(windowlocation.x);
             node.ancestor().setY(windowlocation.y);
         }, null, this);
@@ -2236,11 +2328,10 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             bounds;
 
         bounds = new M.assignfeedback_editpdf.rect();
-        bounds.bound([new M.assignfeedback_editpdf.point(edit.start.x, edit.start.y),
-                     new M.assignfeedback_editpdf.point(edit.end.x, edit.end.y)]);
+        bounds.bound([edit.start, edit.end]);
 
         // We will draw a box with the current background colour.
-        shape = this.graphic.addShape({
+        shape = this.editor.graphic.addShape({
             type: Y.Rect,
             width: bounds.width,
             height: bounds.height,
@@ -2254,6 +2345,33 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         drawable.shapes.push(shape);
 
         return drawable;
+    };
+
+    /**
+     * Promote the current edit to a real comment.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    this.init_from_edit = function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect();
+        bounds.bound([edit.start, edit.end]);
+
+        // Minimum comment width.
+        if (bounds.width < 100) {
+            bounds.width = 100;
+        }
+
+        // Save the current edit to the server and the current page list.
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.width = bounds.width;
+        this.colour = edit.commentcolour;
+        this.rawtext = '';
     };
 
 };
@@ -2745,21 +2863,14 @@ EDITOR.prototype = {
     /**
      * Called to get the bounds of the drawing region.
      * @method get_canvas_bounds
-     * @param boolean relative - if true, will be relative to the canvas (suitable for Node.setXY).
      */
-    get_canvas_bounds : function(relative) {
+    get_canvas_bounds : function() {
         var canvas = Y.one(SELECTOR.DRAWINGCANVAS),
             offsetcanvas = canvas.getXY(),
-            offsetdialogue = Y.one(SELECTOR.DIALOGUE).getXY(),
-            offsetleft = offsetcanvas[0] - offsetdialogue[0],
-            offsettop = offsetcanvas[1] - offsetdialogue[1],
+            offsetleft = offsetcanvas[0],
+            offsettop = offsetcanvas[1],
             width = parseInt(canvas.getStyle('width'), 10),
             height = parseInt(canvas.getStyle('height'), 10);
-
-        if (relative) {
-            offsetleft += offsetdialogue[0];
-            offsettop += offsetdialogue[1];
-        }
 
         return new M.assignfeedback_editpdf.rect(offsetleft, offsettop, width, height);
     },
@@ -2769,8 +2880,8 @@ EDITOR.prototype = {
      * @method get_canvas_coordinates
      * @param M.assignfeedback_editpdf.point point in window coordinats.
      */
-    get_canvas_coordinates : function(point, relative) {
-        var bounds = this.get_canvas_bounds(relative),
+    get_canvas_coordinates : function(point) {
+        var bounds = this.get_canvas_bounds(),
             newpoint = new M.assignfeedback_editpdf.point(point.x - bounds.x, point.y - bounds.y);
 
         bounds.x = bounds.y = 0;
@@ -2784,8 +2895,8 @@ EDITOR.prototype = {
      * @method get_window_coordinates
      * @param M.assignfeedback_editpdf.point point in window coordinats.
      */
-    get_window_coordinates : function(point, relative) {
-        var bounds = this.get_canvas_bounds(relative),
+    get_window_coordinates : function(point) {
+        var bounds = this.get_canvas_bounds(),
             newpoint = new M.assignfeedback_editpdf.point(point.x + bounds.x, point.y + bounds.y);
 
         return newpoint;
@@ -3046,7 +3157,6 @@ EDITOR.prototype = {
         searchcommentsbutton.on('click', this.open_search_comments, this);
         searchcommentsbutton.on('key', this.open_search_comments, 'down:13', this);
 
-
         commentcolourbutton = Y.one(SELECTOR.COMMENTCOLOURBUTTON);
         picker = new M.assignfeedback_editpdf.colourpicker({
             buttonNode: commentcolourbutton,
@@ -3246,41 +3356,11 @@ EDITOR.prototype = {
     },
 
     /**
-     * Event handler for mousedown or touchstart.
-     * @protected
-     * @param Event
-     * @method edit_start
-     */
-    edit_start : function(e) {
-        var offset = Y.one(SELECTOR.DRAWINGCANVAS).getXY(),
-            scrolltop = document.body.scrollTop,
-            scrollleft = document.body.scrollLeft,
-            point = {x : e.clientX - offset[0] + scrollleft,
-                     y : e.clientY - offset[1] + scrolltop};
-
-        if (this.currentedit.starttime) {
-            return;
-        }
-
-        this.currentedit.starttime = new Date().getTime();
-        this.currentedit.start = point;
-        this.currentedit.end = {x : point.x, y : point.y};
-
-        if (this.currentannotation) {
-            // Used to calculate drag offset.
-            this.currentedit.annotationstart = { x : this.currentannotation.x,
-                                                 y : this.currentannotation.y };
-        }
-    },
-
-    /**
      * Generate a drawable from the current in progress edit.
      * @protected
      * @method get_current_drawable
      */
     get_current_drawable : function() {
-        /**var drawable = new M.assignfeedback_editpdf.drawable(this),
-            shape, width, height, x, y, highlightcolour, first; **/
         var comment,
             annotation,
             drawable = false;
@@ -3315,23 +3395,47 @@ EDITOR.prototype = {
     },
 
     /**
+     * Event handler for mousedown or touchstart.
+     * @protected
+     * @param Event
+     * @method edit_start
+     */
+    edit_start : function(e) {
+        var offset = Y.one(SELECTOR.DRAWINGCANVAS).getXY(),
+            scrolltop = document.body.scrollTop,
+            scrollleft = document.body.scrollLeft,
+            point = {x : e.clientX - offset[0] + scrollleft,
+                     y : e.clientY - offset[1] + scrolltop};
+
+        if (this.currentedit.starttime) {
+            return;
+        }
+
+        this.currentedit.starttime = new Date().getTime();
+        this.currentedit.start = point;
+        this.currentedit.end = {x : point.x, y : point.y};
+
+        if (this.currentannotation) {
+            // Used to calculate drag offset.
+            this.currentedit.annotationstart = { x : this.currentannotation.x,
+                                                 y : this.currentannotation.y };
+        }
+    },
+
+    /**
      * Event handler for mousemove.
      * @protected
      * @param Event
      * @method edit_move
      */
     edit_move : function(e) {
-        var canvas = Y.one(SELECTOR.DRAWINGCANVAS),
-            width = parseInt(canvas.getStyle('width'), 10),
-            height = parseInt(canvas.getStyle('height'), 10),
-            offset = canvas.getXY(),
-            scrolltop = document.body.scrollTop,
-            scrollleft = document.body.scrollLeft,
-            point = {x : e.clientX - offset[0] + scrollleft,
-                     y : e.clientY - offset[1] + scrolltop};
+        var bounds = this.get_canvas_bounds(),
+            clientpoint = new M.assignfeedback_editpdf.point(e.clientX + document.body.scrollLeft,
+                                                             e.clientY + document.body.scrollTop),
+            point = this.get_canvas_coordinates(clientpoint);
 
         // Ignore events out of the canvas area.
-        if (point.x < 0 || point.x > width || point.y < 0 || point.y > height) {
+        if (point.x < 0 || point.x > bounds.width || point.y < 0 || point.y > bounds.height) {
             return;
         }
 
@@ -3359,14 +3463,9 @@ EDITOR.prototype = {
      * @method edit_end
      */
     edit_end : function() {
-        var data,
-            width,
-            height,
-            x,
-            y,
-            duration,
-            thepath,
-            selected = false;
+        var duration,
+            comment,
+            annotation;
 
         duration = new Date().getTime() - this.currentedit.start;
 
@@ -3375,112 +3474,20 @@ EDITOR.prototype = {
         }
 
         if (this.currentedit.tool === 'comment') {
-            // Work out the boundary box.
-            x = this.currentedit.start.x;
-            if (this.currentedit.end.x > x) {
-                width = this.currentedit.end.x - x;
-            } else {
-                x = this.currentedit.end.x;
-                width = this.currentedit.start.x - x;
+            comment = new M.assignfeedback_editpdf.comment(this);
+            comment.init_from_edit(this.currentedit);
+            this.pages[this.currentpage].comments.push(comment);
+            this.drawables.push(comment.draw(true));
+        } else {
+            annotation = this.create_annotation(this.currentedit.tool, {});
+            if (annotation) {
+                annotation.init_from_edit(this.currentedit);
+                this.pages[this.currentpage].annotations.push(annotation);
+                this.drawables.push(annotation.draw());
             }
-            y = this.currentedit.start.y;
-            if (this.currentedit.end.y > y) {
-                height = this.currentedit.end.y - y;
-            } else {
-                y = this.currentedit.end.y;
-                height = this.currentedit.start.y - y;
-            }
-            if (width < 100) {
-                width = 100;
-            }
+        }
 
-            // Save the current edit to the server and the current page list.
-
-            data = new M.assignfeedback_editpdf.comment(this,
-                this.get('gradeid'),
-                this.currentpage,
-                x,
-                y,
-                width,
-                this.currentedit.commentcolour,
-                ''
-            );
-
-            this.pages[this.currentpage].comments.push(data);
-            this.drawables.push(data.draw(true));
-        } else if (this.currentedit.tool === 'pen') {
-            // Create the path string.
-            thepath = '';
-            var minx = null,
-                miny = null,
-                maxx = null,
-                maxy = null;
-            Y.each(this.currentedit.path, function(position) {
-                thepath = thepath + position.x + "," + position.y + ":";
-                if (minx === null) {
-                    minx = maxx = position.x;
-                    miny = maxy = position.y;
-                } else {
-                    if (position.x < minx) {
-                        minx = position.x;
-                    }
-                    if (position.y < miny) {
-                        miny = position.y;
-                    }
-                    if (position.x > maxx) {
-                        maxx = position.x;
-                    }
-                    if (position.y > maxy) {
-                        maxy = position.y;
-                    }
-                }
-            }, this);
-            // Remove the last ":".
-            thepath = thepath.substring(0, thepath.length - 1);
-
-            data = this.create_annotation(this.currentedit.tool, {
-                gradeid: this.get('gradeid'),
-                pageno: this.currentpage,
-                x: minx,
-                y: miny,
-                endx: maxx,
-                endy: maxy,
-                colour: this.currentedit.annotationcolour,
-                path: thepath
-            });
-
-            this.pages[this.currentpage].annotations.push(data);
-            this.drawables.push(data.draw());
-
-            // Reset the mouse position for the pen tool.
-            this.currentedit.path = [];
-        } else if (this.currentedit.tool === 'highlight') {
-            // Work out the boundary box.
-            x = this.currentedit.start.x;
-            if (this.currentedit.end.x > x) {
-                width = this.currentedit.end.x - x;
-            } else {
-                x = this.currentedit.end.x;
-                width = this.currentedit.start.x - x;
-            }
-            y = this.currentedit.start.y;
-            height = 16;
-
-            data = this.create_annotation(this.currentedit.tool, {
-                gradeid: this.get('gradeid'),
-                pageno: this.currentpage,
-                x: this.currentedit.start.x,
-                y: this.currentedit.start.y,
-                endx: this.currentedit.end.x,
-                endy: this.currentedit.start.y + 16,
-                type: this.currentedit.tool,
-                colour: this.currentedit.annotationcolour,
-                path: ''
-            });
-
-            this.pages[this.currentpage].annotations.push(data);
-            this.drawables.push(data.draw());
-        } else if (this.currentedit.tool === 'select') {
+        if (this.currentedit.tool === 'select') {
             x = this.currentedit.end.x;
             y = this.currentedit.end.y;
             annotations = this.pages[this.currentpage].annotations;
@@ -3495,24 +3502,12 @@ EDITOR.prototype = {
                 this.currentannotation = selected;
             }
             this.redraw();
-        } else {
-            data = this.create_annotation(this.currentedit.tool, {
-                gradeid: this.get('gradeid'),
-                pageno: this.currentpage,
-                x: this.currentedit.start.x,
-                y: this.currentedit.start.y,
-                endx: this.currentedit.end.x,
-                endy: this.currentedit.end.y,
-                colour: this.currentedit.annotationcolour,
-                path: ''
-            });
-
-            this.pages[this.currentpage].annotations.push(data);
-            this.drawables.push(data.draw());
         }
 
+        // Save the changes.
         this.save_current_page();
 
+        // Reset the current edit.
         this.currentedit.starttime = 0;
         this.currentedit.start = false;
         this.currentedit.end = false;
@@ -3541,7 +3536,7 @@ EDITOR.prototype = {
         } else if (type === "highlight") {
             return new M.assignfeedback_editpdf.annotationhighlight(data);
         }
-        return new M.assignfeedback_editpdf.annotation(data);
+        return false;
     },
 
     /**

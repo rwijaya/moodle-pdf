@@ -177,17 +177,14 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         }
 
         position = this.editor.get_window_coordinates(new M.assignfeedback_editpdf.point(this.x, this.y));
-        container.setStyles({
-            position: 'absolute',
-            left: position.x + 'px',
-            top: position.y + 'px'
-        });
         node.setStyles({
             width: this.width + 'px',
             backgroundColor: COMMENTCOLOUR[this.colour]
         });
 
         drawingregion.append(container);
+        container.setX(position.x);
+        container.setY(position.y);
         drawable.nodes.push(container);
         node.set('value', this.rawtext);
         node.setStyle('height', node.get('scrollHeight') - 8 + 'px');
@@ -265,7 +262,7 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             nodewidth = parseInt(node.getStyle('width'), 10);
             nodeheight = parseInt(node.getStyle('height'), 10);
 
-            newlocation = this.editor.get_canvas_coordinates(new M.assignfeedback_editpdf.point(x, y), true);
+            newlocation = this.editor.get_canvas_coordinates(new M.assignfeedback_editpdf.point(x, y));
             bounds = this.editor.get_canvas_bounds(true);
             bounds.x = 0;
             bounds.y = 0;
@@ -278,7 +275,7 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             this.x = newlocation.x;
             this.y = newlocation.y;
 
-            windowlocation = this.editor.get_window_coordinates(newlocation, true);
+            windowlocation = this.editor.get_window_coordinates(newlocation);
             node.ancestor().setX(windowlocation.x);
             node.ancestor().setY(windowlocation.y);
         }, null, this);
@@ -362,11 +359,10 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             bounds;
 
         bounds = new M.assignfeedback_editpdf.rect();
-        bounds.bound([new M.assignfeedback_editpdf.point(edit.start.x, edit.start.y),
-                     new M.assignfeedback_editpdf.point(edit.end.x, edit.end.y)]);
+        bounds.bound([edit.start, edit.end]);
 
         // We will draw a box with the current background colour.
-        shape = this.graphic.addShape({
+        shape = this.editor.graphic.addShape({
             type: Y.Rect,
             width: bounds.width,
             height: bounds.height,
@@ -380,6 +376,33 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         drawable.shapes.push(shape);
 
         return drawable;
+    };
+
+    /**
+     * Promote the current edit to a real comment.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    this.init_from_edit = function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect();
+        bounds.bound([edit.start, edit.end]);
+
+        // Minimum comment width.
+        if (bounds.width < 100) {
+            bounds.width = 100;
+        }
+
+        // Save the current edit to the server and the current page list.
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.width = bounds.width;
+        this.colour = edit.commentcolour;
+        this.rawtext = '';
     };
 
 };

@@ -73,7 +73,37 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
         this.drawable = drawable;
 
         return ANNOTATIONPEN.superclass.draw.apply(this);
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect(),
+            pathlist = [],
+            i = 0;
+
+        // This will get the boundaries of all points in the path.
+        bounds.bound(edit.path);
+
+        for (i = 0; i < edit.path.length; i++) {
+            pathlist.push(edit.path[i].x + ',' + edit.path[i].y);
+        }
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.endx = bounds.x + bounds.width;
+        this.endy = bounds.y + bounds.height;
+        this.colour = edit.annotationcolour;
+        this.path = pathlist.join(':');
     }
+
 
 });
 

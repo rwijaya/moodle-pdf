@@ -196,8 +196,7 @@ Y.extend(ANNOTATION, Y.Base, {
                 'alt': M.util.get_string('deleteannotation', 'assignfeedback_editpdf')
             });
             deleteicon.setStyles({
-                'backgroundColor' : 'white',
-                'border' : '2px solid ' + SELECTEDBORDERCOLOUR
+                'backgroundColor' : 'white'
             });
             deletelink.addClass('deleteannotationbutton');
             deletelink.append(deleteicon);
@@ -209,8 +208,8 @@ Y.extend(ANNOTATION, Y.Base, {
             deletelink.on('click', this.remove, this);
             deletelink.on('key', this.remove, 'space,enter', this);
 
-            deletelink.setX(offsetcanvas[0] + bounds.x + bounds.width - 20);
-            deletelink.setY(offsetcanvas[1] + bounds.y + 4);
+            deletelink.setX(offsetcanvas[0] + bounds.x + bounds.width - 18);
+            deletelink.setY(offsetcanvas[1] + bounds.y + 6);
             this.drawable.nodes.push(deletelink);
         }
         return this.drawable;
@@ -416,7 +415,9 @@ Y.extend(ANNOTATION, Y.Base, {
         for (i = 0; i < annotations.length; i++) {
             if (annotations[i] === this) {
                 annotations.splice(i, 1);
-                this.drawable.erase();
+                if (this.drawable) {
+                    this.drawable.erase();
+                }
                 this.editor.save_current_page();
                 return;
             }
@@ -454,7 +455,9 @@ Y.extend(ANNOTATION, Y.Base, {
             this.path = newpath.join(':');
 
         }
-        this.drawable.erase();
+        if (this.drawable) {
+            this.drawable.erase();
+        }
         this.editor.drawables.push(this.draw());
     },
 
@@ -469,6 +472,27 @@ Y.extend(ANNOTATION, Y.Base, {
         var noop = edit && false;
         // Override me please.
         return noop;
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect();
+        bounds.bound([edit.start, edit.end]);
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.endx = bounds.x + bounds.width;
+        this.endy = bounds.y + bounds.height;
+        this.colour = edit.annotationcolour;
+        this.path = '';
     }
 
 });

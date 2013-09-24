@@ -86,7 +86,26 @@ Y.extend(ANNOTATIONLINE, M.assignfeedback_editpdf.annotation, {
         drawable.shapes.push(shape);
 
         return drawable;
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = edit.start.x;
+        this.y = edit.start.y;
+        this.endx = edit.end.x;
+        this.endy = edit.end.y;
+        this.colour = edit.annotationcolour;
+        this.path = '';
     }
+
 });
 
 M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
