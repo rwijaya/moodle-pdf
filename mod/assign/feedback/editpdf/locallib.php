@@ -78,11 +78,32 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
            $filename = $feedbackfile->get_filename();
         }
 
+        $stampfiles = array();
+        $fs = get_file_storage();
+        $syscontext = context_system::instance();
+
+        if ($files = $fs->get_area_files($syscontext->id, 'assignfeedback_editpdf', 'stamps', 0, "filename", false)) {
+            foreach ($files as $file) {
+                $filename = $file->get_filename();
+                if ($filename !== '.') {
+                    $url = moodle_url::make_pluginfile_url($syscontext->id,
+                                                   'assignfeedback_editpdf',
+                                                   'stamps',
+                                                   0,
+                                                   '/',
+                                                   $file->get_filename(),
+                                                   false);
+                    array_push($stampfiles, $url->out());
+                }
+            }
+        }
+
         $widget = new assignfeedback_editpdf_widget($this->assignment->get_instance()->id,
                                                     $userid,
                                                     $attempt,
                                                     $url,
-                                                    $filename);
+                                                    $filename,
+                                                    $stampfiles);
 
         $html = $renderer->render($widget);
         $mform->addElement('static', 'editpdf', get_string('editpdf', 'assignfeedback_editpdf'), $html);

@@ -212,6 +212,10 @@ EDITOR.prototype = {
         currenttoolnode = Y.one(TOOLSELECTOR[this.currentedit.tool]);
         currenttoolnode.addClass('assignfeedback_editpdf_selectedbutton');
         currenttoolnode.setAttribute('aria-pressed', 'true');
+
+        button = Y.one(SELECTOR.STAMPSBUTTON);
+        button.one('img').setAttrs({'src': this.currentedit.stamp,
+                                    'height': '16'});
     },
 
     /**
@@ -270,7 +274,6 @@ EDITOR.prototype = {
                 headerContent: this.get('header'),
                 bodyContent: this.get('body'),
                 footerContent: this.get('footer'),
-                draggable: true,
                 width: '840px',
                 visible: true
             });
@@ -496,6 +499,8 @@ EDITOR.prototype = {
             commentcolourbutton,
             annotationcolourbutton,
             searchcommentsbutton,
+            currentstampbutton,
+            stampfiles,
             picker;
 
         // Setup the tool buttons.
@@ -541,6 +546,29 @@ EDITOR.prototype = {
             context: this
         });
 
+        stampfiles = this.get('stampfiles');
+        if (stampfiles.length < 0) {
+            Y.one(SELECTOR.STAMPSBUTTON).hide();
+            Y.one(TOOLSELECTOR.stamp).hide();
+        } else {
+            this.currentedit.stamp = stampfiles[0];
+            currentstampbutton = Y.one(SELECTOR.STAMPSBUTTON);
+
+            picker = new M.assignfeedback_editpdf.stamppicker({
+                buttonNode: currentstampbutton,
+                stamps: stampfiles,
+                callback: function(e) {
+                    var stamp = e.target.getAttribute('data-stamp');
+                    if (!stamp) {
+                        stamp = e.target.ancestor().getAttribute('data-stamp');
+                    }
+                    this.currentedit.stamp = stamp;
+                    this.refresh_button_state();
+                },
+                context: this
+            });
+            this.refresh_button_state();
+        }
         /**
         // Save all stamps into the stamps variable.
         stampurls = this.get('stampfileurls');
@@ -819,7 +847,8 @@ EDITOR.prototype = {
     edit_end : function() {
         var duration,
             comment,
-            annotation;
+            annotation,
+            selected = false;
 
         duration = new Date().getTime() - this.currentedit.start;
 
@@ -889,6 +918,8 @@ EDITOR.prototype = {
             return new M.assignfeedback_editpdf.annotationpen(data);
         } else if (type === "highlight") {
             return new M.assignfeedback_editpdf.annotationhighlight(data);
+        } else if (type === "stamp") {
+            return new M.assignfeedback_editpdf.annotationstamp(data);
         }
         return false;
     },
@@ -1122,7 +1153,7 @@ Y.extend(EDITOR, Y.Base, EDITOR.prototype, {
             validator : Y.Lang.isString,
             value : ''
         },
-        stampfileurls : {
+        stampfiles : {
             validator : Y.Lang.isArray,
             value : ''
         }

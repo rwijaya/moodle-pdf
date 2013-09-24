@@ -28,8 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 $name = 'assignfeedback_editpdf/stamps';
 $title = get_string('stamps','assignfeedback_editpdf');
 $description = get_string('stampsdesc', 'assignfeedback_editpdf');
+
 $setting = new admin_setting_configstoredfile($name, $title, $description, 'stamps', 0,
-    array('maxfiles' => 4, 'accepted_types' => array('image')));
+    array('maxfiles' => 8, 'accepted_types' => array('image')));
 $settings->add($setting);
 
 // Ghostscript setting.

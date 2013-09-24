@@ -336,6 +336,14 @@ EDIT = function() {
     this.annotationcolour = 'red';
 
     /**
+     * The current stamp image.
+     * @property stamp
+     * @type String
+     * @public
+     */
+    this.stamp = '';
+
+    /**
      * List of points the the current drawing path.
      * @property path
      * @type M.assignfeedback_editpdf.point[]
@@ -1486,6 +1494,132 @@ Y.extend(ANNOTATIONHIGHLIGHT, M.assignfeedback_editpdf.annotation, {
 
 M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
 M.assignfeedback_editpdf.annotationhighlight = ANNOTATIONHIGHLIGHT;
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Class representing a stamp.
+ *
+ * @namespace M.assignfeedback_editpdf
+ * @class annotationstamp
+ * @extends annotation
+ * @module moodle-assignfeedback_editpdf-editor
+ */
+ANNOTATIONSTAMP = function(config) {
+    ANNOTATIONSTAMP.superclass.constructor.apply(this, [config]);
+};
+
+ANNOTATIONSTAMP.NAME = "annotationstamp";
+ANNOTATIONSTAMP.ATTRS = {};
+
+Y.extend(ANNOTATIONSTAMP, M.assignfeedback_editpdf.annotation, {
+    /**
+     * Draw a stamp annotation
+     * @protected
+     * @method draw
+     * @return M.assignfeedback_editpdf.drawable
+     */
+    draw : function() {
+        var drawable = new M.assignfeedback_editpdf.drawable(this.editor),
+            drawingregion = Y.one(SELECTOR.DRAWINGREGION),
+            node,
+            position;
+
+        position = this.editor.get_window_coordinates(new M.assignfeedback_editpdf.point(this.x, this.y));
+        node = Y.Node.create('<div/>');
+        node.setStyles({
+            'display': 'inline-block',
+            'backgroundImage': 'url(' + this.path + ')',
+            'width': (this.endx - this.x),
+            'height': (this.endy - this.y),
+            'backgroundSize': '100%',
+            'zIndex': 50
+        });
+
+        drawingregion.append(node);
+        node.setX(position.x);
+        node.setY(position.y);
+
+        drawable.nodes.push(node);
+
+        this.drawable = drawable;
+        return ANNOTATIONSTAMP.superclass.draw.apply(this);
+    },
+
+    /**
+     * Draw the in progress edit.
+     *
+     * @public
+     * @method draw_current_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    draw_current_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect(),
+            drawable = new M.assignfeedback_editpdf.drawable(this.editor),
+            drawingregion = Y.one(SELECTOR.DRAWINGREGION),
+            node,
+            position;
+
+        bounds.bound([edit.start, edit.end]);
+        position = this.editor.get_window_coordinates(new M.assignfeedback_editpdf.point(bounds.x, bounds.y));
+
+        node = Y.Node.create('<div/>');
+        node.setStyles({
+            'display': 'inline-block',
+            'backgroundImage': 'url(' + edit.stamp + ')',
+            'width': bounds.width,
+            'height': bounds.height,
+            'backgroundSize': '100%',
+            'zIndex': 50
+        });
+
+        drawingregion.append(node);
+        node.setX(position.x);
+        node.setY(position.y);
+
+        drawable.nodes.push(node);
+
+        return drawable;
+    },
+
+    /**
+     * Promote the current edit to a real annotation.
+     *
+     * @public
+     * @method init_from_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    init_from_edit : function(edit) {
+        var bounds = new M.assignfeedback_editpdf.rect();
+        bounds.bound([edit.start, edit.end]);
+
+        this.gradeid = this.editor.get('gradeid');
+        this.pageno = this.editor.currentpage;
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.endx = bounds.x + bounds.width;
+        this.endy = bounds.y + bounds.height;
+        debugger;
+        this.colour = edit.annotationcolour;
+        this.path = edit.stamp;
+    }
+
+});
+
+M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
+M.assignfeedback_editpdf.annotationstamp = ANNOTATIONSTAMP;
 var DROPDOWN_NAME = "Dropdown menu",
     DROPDOWN;
 
@@ -1701,6 +1835,114 @@ Y.extend(COLOURPICKER, M.assignfeedback_editpdf.dropdown, {
 
 M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
 M.assignfeedback_editpdf.colourpicker = COLOURPICKER;
+var STAMPPICKER_NAME = "Colourpicker",
+    STAMPPICKER;
+
+/**
+ * STAMPPICKER
+ * This is a drop down list of stamps.
+ *
+ * @namespace M.assignfeedback_editpdf.stamppicker
+ * @class dropdown
+ * @constructor
+ * @extends Y.Base
+ */
+STAMPPICKER = function(config) {
+    STAMPPICKER.superclass.constructor.apply(this, [config]);
+};
+
+Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
+
+    /**
+     * Initialise the menu.
+     *
+     * @method initializer
+     * @return void
+     */
+    initializer : function(config) {
+        var stamplist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>'),
+            body;
+
+        // Build a list of stamped buttons.
+        Y.each(this.get('stamps'), function(stamp) {
+            var button, listitem, title;
+
+            title = M.util.get_string('stamp', 'assignfeedback_editpdf');
+            button = Y.Node.create('<button><img height="16" alt="' + title + '" src="' + stamp + '"/></button>');
+            button.setAttribute('data-stamp', stamp);
+            button.setStyle('backgroundImage', 'none');
+            listitem = Y.Node.create('<li/>');
+            listitem.append(button);
+            stamplist.append(listitem);
+        }, this);
+
+        body = Y.Node.create('<div/>');
+
+        // Set the call back.
+        stamplist.delegate('click', this.callback_handler, 'button', this);
+        stamplist.delegate('key', this.callback_handler, 'down:13', 'button', this);
+
+        // Set the accessible header text.
+        this.set('headerText', M.util.get_string('stamppicker', 'assignfeedback_editpdf'));
+
+        // Set the body content.
+        body.append(stamplist);
+        this.set('bodyContent', body);
+
+        STAMPPICKER.superclass.initializer.call(this, config);
+    },
+    callback_handler : function(e) {
+        var callback = this.get('callback'),
+            callbackcontext = this.get('context'),
+            bind;
+
+        this.hide();
+
+        // Call the callback with the specified context.
+        bind = Y.bind(callback, callbackcontext, e);
+
+        bind();
+    }
+}, {
+    NAME : STAMPPICKER_NAME,
+    ATTRS : {
+        /**
+         * The list of stamps this stamp picker supports.
+         *
+         * @attribute stamps
+         * @type String[] - the stamp filenames.
+         * @default {}
+         */
+        stamps : {
+            value : []
+        },
+
+        /**
+         * The function called when a new stamp is chosen.
+         *
+         * @attribute callback
+         * @type function
+         * @default null
+         */
+        callback : {
+            value : null
+        },
+
+        /**
+         * The context passed to the callback when a stamp is chosen.
+         *
+         * @attribute context
+         * @type Y.Node
+         * @default null
+         */
+        context : {
+            value : null
+        }
+    }
+});
+
+M.assignfeedback_editpdf = M.assignfeedback_editpdf || {};
+M.assignfeedback_editpdf.stamppicker = STAMPPICKER;
 var COMMENTMENUNAME = "Commentmenu",
     COMMENTMENU;
 
@@ -2858,6 +3100,10 @@ EDITOR.prototype = {
         currenttoolnode = Y.one(TOOLSELECTOR[this.currentedit.tool]);
         currenttoolnode.addClass('assignfeedback_editpdf_selectedbutton');
         currenttoolnode.setAttribute('aria-pressed', 'true');
+
+        button = Y.one(SELECTOR.STAMPSBUTTON);
+        button.one('img').setAttrs({'src': this.currentedit.stamp,
+                                    'height': '16'});
     },
 
     /**
@@ -2916,7 +3162,6 @@ EDITOR.prototype = {
                 headerContent: this.get('header'),
                 bodyContent: this.get('body'),
                 footerContent: this.get('footer'),
-                draggable: true,
                 width: '840px',
                 visible: true
             });
@@ -3142,6 +3387,8 @@ EDITOR.prototype = {
             commentcolourbutton,
             annotationcolourbutton,
             searchcommentsbutton,
+            currentstampbutton,
+            stampfiles,
             picker;
 
         // Setup the tool buttons.
@@ -3187,6 +3434,29 @@ EDITOR.prototype = {
             context: this
         });
 
+        stampfiles = this.get('stampfiles');
+        if (stampfiles.length < 0) {
+            Y.one(SELECTOR.STAMPSBUTTON).hide();
+            Y.one(TOOLSELECTOR.stamp).hide();
+        } else {
+            this.currentedit.stamp = stampfiles[0];
+            currentstampbutton = Y.one(SELECTOR.STAMPSBUTTON);
+
+            picker = new M.assignfeedback_editpdf.stamppicker({
+                buttonNode: currentstampbutton,
+                stamps: stampfiles,
+                callback: function(e) {
+                    var stamp = e.target.getAttribute('data-stamp');
+                    if (!stamp) {
+                        stamp = e.target.ancestor().getAttribute('data-stamp');
+                    }
+                    this.currentedit.stamp = stamp;
+                    this.refresh_button_state();
+                },
+                context: this
+            });
+            this.refresh_button_state();
+        }
         /**
         // Save all stamps into the stamps variable.
         stampurls = this.get('stampfileurls');
@@ -3465,7 +3735,8 @@ EDITOR.prototype = {
     edit_end : function() {
         var duration,
             comment,
-            annotation;
+            annotation,
+            selected = false;
 
         duration = new Date().getTime() - this.currentedit.start;
 
@@ -3535,6 +3806,8 @@ EDITOR.prototype = {
             return new M.assignfeedback_editpdf.annotationpen(data);
         } else if (type === "highlight") {
             return new M.assignfeedback_editpdf.annotationhighlight(data);
+        } else if (type === "stamp") {
+            return new M.assignfeedback_editpdf.annotationstamp(data);
         }
         return false;
     },
@@ -3768,7 +4041,7 @@ Y.extend(EDITOR, Y.Base, EDITOR.prototype, {
             validator : Y.Lang.isString,
             value : ''
         },
-        stampfileurls : {
+        stampfiles : {
             validator : Y.Lang.isArray,
             value : ''
         }

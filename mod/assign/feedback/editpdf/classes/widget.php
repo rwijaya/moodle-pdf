@@ -43,6 +43,8 @@ class assignfeedback_editpdf_widget implements renderable {
     public $downloadurl = null;
     /** @var string $downloadfilename */
     public $downloadfilename = null;
+    /** @var string[] $stampfiles */
+    public $stampfiles = array();
 
     /**
      * Constructor
@@ -51,12 +53,14 @@ class assignfeedback_editpdf_widget implements renderable {
      * @param int $attemptnumber - The attempt number we are grading
      * @param moodle_url $downloadurl - A url to download the current generated pdf.
      * @param string $downloadfilename - Name of the generated pdf.
+     * @param string[] $stampfiles - The file names of the stamps.
      */
-    public function __construct($assignment, $userid, $attemptnumber, $downloadurl, $downloadfilename) {
+    public function __construct($assignment, $userid, $attemptnumber, $downloadurl, $downloadfilename, $stampfiles) {
         $this->assignment = $assignment;
         $this->userid = $userid;
         $this->attemptnumber = $attemptnumber;
         $this->downloadurl = $downloadurl;
         $this->downloadfilename = $downloadfilename;
+        $this->stampfiles = $stampfiles;
     }
 }
