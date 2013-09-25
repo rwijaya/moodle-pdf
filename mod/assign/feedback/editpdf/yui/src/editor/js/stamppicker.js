@@ -23,15 +23,14 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
      * @return void
      */
     initializer : function(config) {
-        var stamplist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>'),
-            body;
+        var stamplist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>');
 
         // Build a list of stamped buttons.
         Y.each(this.get('stamps'), function(stamp) {
             var button, listitem, title;
 
             title = M.util.get_string('stamp', 'assignfeedback_editpdf');
-            button = Y.Node.create('<button><img height="16" alt="' + title + '" src="' + stamp + '"/></button>');
+            button = Y.Node.create('<button><img height="40" alt="' + title + '" src="' + stamp + '"/></button>');
             button.setAttribute('data-stamp', stamp);
             button.setStyle('backgroundImage', 'none');
             listitem = Y.Node.create('<li/>');
@@ -39,7 +38,6 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
             stamplist.append(listitem);
         }, this);
 
-        body = Y.Node.create('<div>&nbsp;</div>');
 
         // Set the call back.
         stamplist.delegate('click', this.callback_handler, 'button', this);
@@ -49,8 +47,7 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
         this.set('headerText', M.util.get_string('stamppicker', 'assignfeedback_editpdf'));
 
         // Set the body content.
-        body.append(stamplist);
-        this.set('bodyContent', body);
+        this.set('bodyContent', stamplist);
 
         STAMPPICKER.superclass.initializer.call(this, config);
     },

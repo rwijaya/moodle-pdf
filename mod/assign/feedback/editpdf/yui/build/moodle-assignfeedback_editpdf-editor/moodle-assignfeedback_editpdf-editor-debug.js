@@ -1607,19 +1607,15 @@ Y.extend(COLOURPICKER, M.assignfeedback_editpdf.dropdown, {
 
         // Build a list of coloured buttons.
         Y.each(this.get('colours'), function(rgb, colour) {
-            var button, listitem, title, img;
+            var button, listitem, title, img, iconname;
 
             title = M.util.get_string(colour, 'assignfeedback_editpdf');
-            img = M.util.image_url('commentcolour', 'assignfeedback_editpdf');
+            iconname = this.get('iconprefix') + colour;
+            img = M.util.image_url(iconname, 'assignfeedback_editpdf');
             button = Y.Node.create('<button><img alt="' + title + '" src="' + img + '"/></button>');
             button.setAttribute('data-colour', colour);
             button.setAttribute('data-rgb', rgb);
-            button.addClass('colour_' + colour);
             button.setStyle('backgroundImage', 'none');
-            button.one('img').setStyle('background', rgb);
-            if (colour === 'clear') {
-                button.one('img').setStyle('borderStyle', 'dashed');
-            }
             listitem = Y.Node.create('<li/>');
             listitem.append(button);
             colourlist.append(listitem);
@@ -1686,6 +1682,17 @@ Y.extend(COLOURPICKER, M.assignfeedback_editpdf.dropdown, {
          */
         context : {
             value : null
+        },
+
+        /**
+         * The prefix for the icon image names.
+         *
+         * @attribute iconprefix
+         * @type String
+         * @default 'colour_'
+         */
+        iconprefix : {
+            value : 'colour_'
         }
     }
 });
@@ -1717,15 +1724,14 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
      * @return void
      */
     initializer : function(config) {
-        var stamplist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>'),
-            body;
+        var stamplist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>');
 
         // Build a list of stamped buttons.
         Y.each(this.get('stamps'), function(stamp) {
             var button, listitem, title;
 
             title = M.util.get_string('stamp', 'assignfeedback_editpdf');
-            button = Y.Node.create('<button><img height="16" alt="' + title + '" src="' + stamp + '"/></button>');
+            button = Y.Node.create('<button><img height="40" alt="' + title + '" src="' + stamp + '"/></button>');
             button.setAttribute('data-stamp', stamp);
             button.setStyle('backgroundImage', 'none');
             listitem = Y.Node.create('<li/>');
@@ -1733,7 +1739,6 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
             stamplist.append(listitem);
         }, this);
 
-        body = Y.Node.create('<div>&nbsp;</div>');
 
         // Set the call back.
         stamplist.delegate('click', this.callback_handler, 'button', this);
@@ -1743,8 +1748,7 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
         this.set('headerText', M.util.get_string('stamppicker', 'assignfeedback_editpdf'));
 
         // Set the body content.
-        body.append(stamplist);
-        this.set('bodyContent', body);
+        this.set('bodyContent', stamplist);
 
         STAMPPICKER.superclass.initializer.call(this, config);
     },
@@ -2938,11 +2942,12 @@ EDITOR.prototype = {
      * @method refresh_button_state
      */
     refresh_button_state : function() {
-        var button, currenttoolnode;
+        var button, currenttoolnode, imgurl;
         // Initalise the colour buttons.
         button = Y.one(SELECTOR.COMMENTCOLOURBUTTON);
-        button.setStyle('backgroundImage', 'none');
-        button.one('img').setStyle('background', COMMENTCOLOUR[this.currentedit.commentcolour]);
+
+        imgurl = M.util.image_url('background_colour_' + this.currentedit.commentcolour, 'assignfeedback_editpdf');
+        button.one('img').setAttribute('src', imgurl);
 
         if (this.currentedit.commentcolour === 'clear') {
             button.one('img').setStyle('borderStyle', 'dashed');
@@ -2951,8 +2956,8 @@ EDITOR.prototype = {
         }
 
         button = Y.one(SELECTOR.ANNOTATIONCOLOURBUTTON);
-        button.setStyle('backgroundImage', 'none');
-        button.one('img').setStyle('backgroundColor', ANNOTATIONCOLOUR[this.currentedit.annotationcolour]);
+        imgurl = M.util.image_url('colour_' + this.currentedit.annotationcolour, 'assignfeedback_editpdf');
+        button.one('img').setAttribute('src', imgurl);
 
         currenttoolnode = Y.one(TOOLSELECTOR[this.currentedit.tool]);
         currenttoolnode.addClass('assignfeedback_editpdf_selectedbutton');
@@ -3045,49 +3050,6 @@ EDITOR.prototype = {
     },
 
     /**
-     * Called to delete the last generated pdf.
-     * @method link_handler
-     */
-    delete_link_handler : function(e) {
-        var downloadlink,
-            deletelink;
-
-        Y.log('Delete generated pdf');
-        e.preventDefault();
-
-        var ajaxurl = AJAXBASE,
-            config;
-
-        config = {
-            method: 'post',
-            context: this,
-            sync: false,
-            data : {
-                'sesskey' : M.cfg.sesskey,
-                'action' : 'deletefeedbackdocument',
-                'userid' : this.get('userid'),
-                'attemptnumber' : this.get('attemptnumber'),
-                'assignmentid' : this.get('assignmentid')
-            },
-            on: {
-                success: function() {
-                    downloadlink = Y.one('#' + this.get('downloadlinkid'));
-                    deletelink = Y.one('#' + this.get('deletelinkid'));
-
-                    downloadlink.addClass('hidden');
-                    deletelink.addClass('hidden');
-                },
-                failure: function(tid, response) {
-                    return M.core.exception(response.responseText);
-                }
-            }
-        };
-
-        Y.io(ajaxurl, config);
-
-    },
-
-    /**
      * Called to load the information and annotations for all pages.
      * @method load_all_pages
      */
@@ -3161,78 +3123,7 @@ EDITOR.prototype = {
         this.setup_navigation();
         this.setup_toolbar();
         this.change_page();
-        this.setup_save_cancel();
     },
-
-    /**
-     * Setup stamp picker
-     * @protected
-     * @method setup_stamp_picker
-     * @param Y.Node button - The button to open the picker
-     * @param stamps - List of stamps (from this.stamps)
-     * @param {function} callback when a new stamp is chosen.
-    setup_stamp_picker : function(node, stamps, callback) {
-        var stamplist = Y.Node.create('<ul role="menu" class="assignfeedback_editpdf_menu"/>'),
-            stamppicker,
-            body,
-            headertext,
-            showhandler;
-
-        Y.each(stamps, function(stamp, stampindex) {
-            var button, listitem;
-
-            button = Y.Node.create('<button/>');
-            button.setAttribute('title', M.util.get_string('stamp', 'assignfeedback_editpdf', stampindex));
-            button.setAttribute('stampindex', stampindex);
-            button.setStyle('backgroundImage', 'url(\'' + stamp.url + '\')');
-            button.setStyle('backgroundSize', '100% 100%');
-            button.setStyle('backgroundRepeat', 'no-repeat');
-            button.setStyle('height', '30px');
-            button.setStyle('width', '40px');
-            button.setStyle('borderStyle', 'solid');
-            listitem = Y.Node.create('<li/>');
-            listitem.append(button);
-            stamplist.append(listitem);
-        }, this);
-
-        body = Y.Node.create('<div/>');
-
-        stamplist.delegate('click', callback, 'button', this);
-        stamplist.delegate('key', callback, 'down:13', 'button', this);
-        headertext = Y.Node.create('<h3/>');
-        headertext.addClass('accesshide');
-        headertext.setHTML(M.util.get_string('stamppicker', 'assignfeedback_editpdf'));
-        body.append(headertext);
-        body.append(stamplist);
-
-        stamppicker = new M.core.dialogue({
-            extraClasses : ['assignfeedback_editpdf_colourpicker'],
-            draggable: false,
-            centered: false,
-            width: 'auto',
-            lightbox: false,
-            visible: false,
-            bodyContent: body,
-            footerContent: '',
-            align: {node: node, points: [Y.WidgetPositionAlign.TL, Y.WidgetPositionAlign.BL]}
-        });
-
-        body.on('clickoutside', function(e) {
-            if (e.target !== node && e.target.ancestor() !== node) {
-                e.preventDefault();
-                stamppicker.hide();
-            }
-        });
-
-        showhandler = function() {
-            this.currentstamppicker = stamppicker;
-            stamppicker.show();
-        };
-        node.on('click', showhandler, this);
-        node.on('key', showhandler, 'down:13', this);
-
-    },
-     */
 
     /**
      * Attach listeners and enable the color picker buttons.
@@ -3265,6 +3156,7 @@ EDITOR.prototype = {
         picker = new M.assignfeedback_editpdf.colourpicker({
             buttonNode: commentcolourbutton,
             colours: COMMENTCOLOUR,
+            iconprefix: 'background_colour_',
             callback: function (e) {
                 var colour = e.target.getAttribute('data-colour');
                 if (!colour) {
@@ -3279,6 +3171,7 @@ EDITOR.prototype = {
         annotationcolourbutton = Y.one(SELECTOR.ANNOTATIONCOLOURBUTTON);
         picker = new M.assignfeedback_editpdf.colourpicker({
             buttonNode: annotationcolourbutton,
+            iconprefix: 'colour_',
             colours: ANNOTATIONCOLOUR,
             callback: function (e) {
                 var colour = e.target.getAttribute('data-colour');
@@ -3314,45 +3207,6 @@ EDITOR.prototype = {
             });
             this.refresh_button_state();
         }
-        /**
-        // Save all stamps into the stamps variable.
-        stampurls = this.get('stampfileurls');
-        Y.log(stampurls);
-        stamponload = function() {
-            this.rootcontext.stamps[this.stampindex].height = this.height;
-            this.rootcontext.stamps[this.stampindex].width = this.width;
-        };
-        for (i = 0; i < stampurls.length; i++) {
-            var stamp = new Stamp();
-            stamp.url = M.cfg.wwwroot + stampfileurl;
-            this.stamps[i] = stamp;
-            // Find out the image height/width.
-            var img = new Image();
-            img.src = M.cfg.wwwroot + stampfileurl;
-            img.stampindex = i;
-            img.rootcontext = this;
-            img.onload = stamponload;
-        }
-
-        // Setup the stamp picker
-        stampsbutton = Y.one(SELECTOR.STAMPSBUTTON);
-        if (stampurls.length <= 0) {
-            stampsbutton.setAttribute('disabled', 'true');
-        } else {
-            this.currentstamp = 0;
-            stampsbutton.setStyle('backgroundImage', 'url(\'' + this.stamps[this.currentstamp].url + '\')');
-            stampsbutton.setStyle('backgroundSize', '100% 100%');
-            stampsbutton.setStyle('backgroundRepeat', 'no-repeat');
-            this.setup_stamp_picker(stampsbutton, this.stamps, function (e) {
-                this.currentstamp = e.target.getAttribute('stampindex');
-                button = Y.one(SELECTOR.STAMPSBUTTON);
-                button.setStyle('backgroundImage', 'url(\'' + this.stamps[this.currentstamp].url + '\')');
-                button.setStyle('backgroundSize', '100% 100%');
-                button.setStyle('backgroundRepeat', 'no-repeat');
-                this.currentstamppicker.hide();
-            });
-        }
-        */
     },
 
     /**
@@ -3371,31 +3225,6 @@ EDITOR.prototype = {
         currenttoolnode.setAttribute('aria-pressed', 'false');
         this.currentedit.tool = tool;
         this.refresh_button_state();
-    },
-
-    /**
-     * Attach listeners and enable the save/cancel buttons.
-     * @protected
-     * @method setup_save_cancel
-     */
-    setup_save_cancel : function() {
-        var save;
-
-        save = Y.one(SELECTOR.SAVE);
-
-        save.on('mousedown', this.handle_save, this);
-        save.on('key', this.handle_save, 'down:13', this);
-        save.removeAttribute('disabled');
-    },
-
-    /**
-     * Hide the popup - but don't save anything anywhere.
-     * @protected
-     * @method handle_cancel
-     */
-    handle_cancel : function(e) {
-        e.preventDefault();
-        this.dialogue.hide();
     },
 
     /**
@@ -3420,66 +3249,6 @@ EDITOR.prototype = {
         page = { comments : comments, annotations : annotations };
 
         return Y.JSON.stringify(page);
-    },
-
-    /**
-     * Hide the popup - after generating a new pdf.
-     * @protected
-     * @method handle_save
-     */
-    handle_save : function(e) {
-        e.preventDefault();
-
-        var ajaxurl = AJAXBASE,
-            config;
-
-        config = {
-            method: 'post',
-            context: this,
-            sync: false,
-            data : {
-                'sesskey' : M.cfg.sesskey,
-                'action' : 'generatepdf',
-                'userid' : this.get('userid'),
-                'attemptnumber' : this.get('attemptnumber'),
-                'assignmentid' : this.get('assignmentid')
-            },
-            on: {
-                success: function(tid, response) {
-                    var jsondata, downloadlink, deletelink, downloadfilename;
-                    Y.log(response.responseText);
-                    try {
-                        jsondata = Y.JSON.parse(response.responseText);
-                        if (jsondata.error) {
-                            return new M.core.ajaxException(jsondata);
-                        } else {
-
-                            if (jsondata.url) {
-                                // We got a valid response with a url and filename for the generated pdf.
-                                downloadlink = Y.one('#' + this.get('downloadlinkid'));
-                                downloadfilename = Y.one('#' + this.get('downloadlinkid') + ' span');
-                                deletelink = Y.one('#' + this.get('deletelinkid'));
-
-                                // Update the filename and show the download and delete links.
-                                downloadfilename.setHTML(jsondata.filename);
-                                downloadlink.setAttribute('href', jsondata.url);
-                                downloadlink.removeClass('hidden');
-                                deletelink.removeClass('hidden');
-
-                            }
-                            this.dialogue.hide();
-                        }
-                    } catch (e) {
-                        return new M.core.exception(e);
-                    }
-                },
-                failure: function(tid, response) {
-                    return M.core.exception(response.responseText);
-                }
-            }
-        };
-
-        Y.io(ajaxurl, config);
     },
 
     /**

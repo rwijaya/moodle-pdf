@@ -103,14 +103,22 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $header = get_string('pluginname', 'assignfeedback_editpdf');
         $body = '';
         // Create the page navigation.
-        $navigation = '';
+        $navigation1 = '';
+        $navigation2 = '';
 
-        $navigation .= html_writer::tag('button', '⤎', array('disabled'=>'true', 'class'=>'navigate-previous-button'));
+        $iconalt = get_string('navigateprevious', 'assignfeedback_editpdf');
+        $iconhtml = $this->pix_icon('nav_prev', $iconalt, 'assignfeedback_editpdf');
+        $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true', 'class'=>'navigate-previous-button'));
         $pageoptions = html_writer::tag('option', get_string('gotopage', 'assignfeedback_editpdf'), array('value'=>''));
-        $navigation .= html_writer::tag('select', $pageoptions, array('disabled'=>'true', 'class'=>'navigate-page-select'));
-        $navigation .= html_writer::tag('button', '⤏', array('disabled'=>'true', 'class'=>'navigate-next-button'));
+        $navigation1 .= html_writer::tag('select', $pageoptions, array('disabled'=>'true', 'class'=>'navigate-page-select'));
+        $iconalt = get_string('navigatenext', 'assignfeedback_editpdf');
+        $iconhtml = $this->pix_icon('nav_next', $iconalt, 'assignfeedback_editpdf');
+        $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true', 'class'=>'navigate-next-button'));
 
-        $navigation = html_writer::div($navigation, 'navigation', array('role'=>'navigation'));
+        $navigation1 = html_writer::div($navigation1, 'navigation', array('role'=>'navigation'));
+
+        $navigation2 .= $this->render_toolbar_button('comment_search', 'searchcomments');
+        $navigation2 = html_writer::div($navigation2, 'navigation', array('role'=>'navigation'));
 
         $toolbar1 = '';
         $toolbar2 = '';
@@ -120,8 +128,7 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
 
         // Comments.
         $toolbar1 .= $this->render_toolbar_button('comment', 'comment');
-        $toolbar1 .= $this->render_toolbar_button('search', 'searchcomments');
-        $toolbar1 .= $this->render_toolbar_button('commentcolour', 'commentcolour');
+        $toolbar1 .= $this->render_toolbar_button('background_colour_clear', 'commentcolour');
         $toolbar1 = html_writer::div($toolbar1, 'toolbar', array('role'=>'toolbar'));
 
         // Select Tool.
@@ -134,22 +141,17 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $toolbar3 .= $this->render_toolbar_button('rectangle', 'rectangle');
         $toolbar3 .= $this->render_toolbar_button('oval', 'oval');
         $toolbar3 .= $this->render_toolbar_button('highlight', 'highlight');
-        $toolbar3 .= $this->render_toolbar_button('annotationcolour', 'annotationcolour');
+        $toolbar3 .= $this->render_toolbar_button('background_colour_clear', 'annotationcolour');
         $toolbar3 = html_writer::div($toolbar3, 'toolbar', array('role'=>'toolbar'));
 
         // Stamps.
         $toolbar4 .= $this->render_toolbar_button('stamp', 'stamp');
-        $toolbar4 .= $this->render_toolbar_button('currentstamp', 'currentstamp');
+        $toolbar4 .= $this->render_toolbar_button('background_colour_clear', 'currentstamp');
         $toolbar4 = html_writer::div($toolbar4, 'toolbar', array('role'=>'toolbar'));
 
-        // Generate PDF.
-        $attributes = array('disabled'=>'true', 'class'=>'savebutton');
-        $toolbar5 .= html_writer::tag('button', '⤾', $attributes);
-
-        $toolbar5 = html_writer::div($toolbar5, 'toolbar', array('role'=>'toolbar'));
-
         // Toobars written in reverse order because they are floated right.
-        $pageheader = html_writer::div($navigation .
+        $pageheader = html_writer::div($navigation1 .
+                                       $navigation2 .
                                        $toolbar5 .
                                        $toolbar4 .
                                        $toolbar3 .

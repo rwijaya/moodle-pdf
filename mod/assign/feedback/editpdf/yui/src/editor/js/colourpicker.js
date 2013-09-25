@@ -28,19 +28,15 @@ Y.extend(COLOURPICKER, M.assignfeedback_editpdf.dropdown, {
 
         // Build a list of coloured buttons.
         Y.each(this.get('colours'), function(rgb, colour) {
-            var button, listitem, title, img;
+            var button, listitem, title, img, iconname;
 
             title = M.util.get_string(colour, 'assignfeedback_editpdf');
-            img = M.util.image_url('commentcolour', 'assignfeedback_editpdf');
+            iconname = this.get('iconprefix') + colour;
+            img = M.util.image_url(iconname, 'assignfeedback_editpdf');
             button = Y.Node.create('<button><img alt="' + title + '" src="' + img + '"/></button>');
             button.setAttribute('data-colour', colour);
             button.setAttribute('data-rgb', rgb);
-            button.addClass('colour_' + colour);
             button.setStyle('backgroundImage', 'none');
-            button.one('img').setStyle('background', rgb);
-            if (colour === 'clear') {
-                button.one('img').setStyle('borderStyle', 'dashed');
-            }
             listitem = Y.Node.create('<li/>');
             listitem.append(button);
             colourlist.append(listitem);
@@ -107,6 +103,17 @@ Y.extend(COLOURPICKER, M.assignfeedback_editpdf.dropdown, {
          */
         context : {
             value : null
+        },
+
+        /**
+         * The prefix for the icon image names.
+         *
+         * @attribute iconprefix
+         * @type String
+         * @default 'colour_'
+         */
+        iconprefix : {
+            value : 'colour_'
         }
     }
 });

@@ -112,6 +112,19 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
+     * Generate the pdf.
+     *
+     * @param stdClass $grade
+     * @param stdClass $data
+     * @return bool
+     */
+    public function save(stdClass $grade, stdClass $data) {
+        $file = document_services::generate_feedback_document($this->assignment, $grade->userid, $grade->attemptnumber);
+
+        return !empty($file);
+    }
+
+    /**
      * Display the list of files in the feedback status table.
      *
      * @param stdClass $grade
