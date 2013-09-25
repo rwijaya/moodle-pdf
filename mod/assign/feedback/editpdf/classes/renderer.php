@@ -175,7 +175,8 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
             'commentcontextmenu',
             'deleteannotation',
             'stamp',
-            'stamppicker'
+            'stamppicker',
+            'cannotopenpdf'
         ), 'assignfeedback_editpdf');
 
         return $html;

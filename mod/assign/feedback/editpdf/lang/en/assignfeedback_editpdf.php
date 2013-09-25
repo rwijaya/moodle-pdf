@@ -79,3 +79,4 @@ $string['gspath_help'] = 'On most Linux installs, this can be left as \'/usr/bin
 $string['downloadablefilename'] = 'feedback.pdf';
 $string['colourpicker'] = 'Colour Picker';
 $string['unsavedchanges'] = 'Unsaved changes';
+$string['cannotopenpdf'] = 'Can not open this PDF format.';

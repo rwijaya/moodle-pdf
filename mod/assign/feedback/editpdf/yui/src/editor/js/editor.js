@@ -333,13 +333,26 @@ EDITOR.prototype = {
      * @method all_pages_loaded
      */
     all_pages_loaded : function(responsetext) {
-        var data, i, j, comment;
-
+        var data, i, j, comment, errormsg;
         try {
             data = Y.JSON.parse(responsetext);
         } catch (e) {
-             this.dialogue.hide();
-             return new M.core.exception(e);
+            this.dialogue.hide();
+            // Display alert dialogue.
+            if (M.cfg.developerdebug) {
+               errormsg = responsetext;
+            } else {
+                errormsg = M.util.get_string('cannotopenpdf', 'assignfeedback_editpdf');
+            }
+            errordialog = new M.core.dialogue({
+                centered: true,
+                width: '40%',
+                lightbox: true,
+                visible: true,
+                headerContent: M.util.get_string('cannotopenpdf', 'assignfeedback_editpdf'),
+                bodyContent: errormsg
+            });
+            return new M.core.exception(e);
         }
 
         this.pagecount = data.pagecount;
