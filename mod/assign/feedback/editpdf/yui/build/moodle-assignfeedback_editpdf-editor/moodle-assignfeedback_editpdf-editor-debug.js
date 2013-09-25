@@ -1435,6 +1435,12 @@ Y.extend(ANNOTATIONSTAMP, M.assignfeedback_editpdf.annotation, {
         var bounds = new M.assignfeedback_editpdf.rect();
         bounds.bound([edit.start, edit.end]);
 
+        if (bounds.width < 40) {
+            bounds.width = 40;
+        }
+        if (bounds.height < 40) {
+            bounds.height = 40;
+        }
         this.gradeid = this.editor.get('gradeid');
         this.pageno = this.editor.currentpage;
         this.x = bounds.x;
