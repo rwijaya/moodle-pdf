@@ -168,8 +168,7 @@ EDITOR.prototype = {
      * @method initializer
      */
     initializer : function() {
-        var link,
-            deletelink;
+        var link;
 
         this.quicklist = new M.assignfeedback_editpdf.quickcommentlist(this);
 
@@ -178,11 +177,6 @@ EDITOR.prototype = {
 
         link.on('click', this.link_handler, this);
         link.on('key', this.link_handler, 'down:13', this);
-
-        Y.log(this.get('deletelinkid'));
-        deletelink = Y.one('#' + this.get('deletelinkid'));
-        deletelink.on('click', this.delete_link_handler, this);
-        deletelink.on('key', this.delete_link_handler, 'down:13', this);
 
         this.currentedit.start = false;
         this.currentedit.end = false;
@@ -667,6 +661,7 @@ EDITOR.prototype = {
         this.currentedit.starttime = 0;
         this.currentedit.start = false;
         this.currentedit.end = false;
+        this.currentedit.path = [];
     },
 
     /**
@@ -724,6 +719,7 @@ EDITOR.prototype = {
                         if (jsondata.error) {
                             return new M.core.ajaxException(jsondata);
                         }
+                        Y.one(SELECTOR.UNSAVEDCHANGESDIV).addClass('haschanges');
                     } catch (e) {
                         return new M.core.exception(e);
                     }
@@ -911,10 +907,6 @@ Y.extend(EDITOR, Y.Base, EDITOR.prototype, {
             value : ''
         },
         deletelinkid : {
-            validator : Y.Lang.isString,
-            value : ''
-        },
-        downloadlinkid : {
             validator : Y.Lang.isString,
             value : ''
         },

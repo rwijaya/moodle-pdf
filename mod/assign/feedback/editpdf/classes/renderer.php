@@ -65,39 +65,14 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
 
         $html .= html_writer::div(get_string('jsrequired', 'assignfeedback_editpdf'), 'hiddenifjs');
         $linkid = html_writer::random_id();
-        $launcheditorlink = html_writer::tag('button',
+        $launcheditorlink = html_writer::tag('a',
                                               get_string('launcheditor', 'assignfeedback_editpdf'),
-                                              array('id'=>$linkid, 'class'=>'btn'));
-        $html .= html_writer::tag('style', file_get_contents($CFG->dirroot . '/mod/assign/feedback/editpdf/styles.css'));
+                                              array('id'=>$linkid, 'class'=>'btn', 'href'=>'#'));
         $links = $launcheditorlink;
 
-        $linkclass = '';
-        if (!$widget->downloadurl) {
-            $linkclass .= ' hidden';
-        }
-
-        $downloadlinkid = html_writer::random_id();
-        $pdficon = $this->pix_icon('f/pdf', '');
-        $url = '#';
-        $filename = '';
-        if ($widget->downloadurl) {
-            $url = $widget->downloadurl;
-            $filename = $widget->downloadfilename;
-        }
-
-        $filename = html_writer::span($filename);
-        $downloadfeedbacklink = html_writer::link($url,
-                                                $pdficon . ' ' . $filename,
-                                                array('class'=>$linkclass, 'id'=>$downloadlinkid, 'role'=>'button'));
-        $links .= html_writer::start_tag('div', array('class'=>'assignfeedback_editpdf_downloadlink'));
-        $links .= $downloadfeedbacklink;
-        $deletelinkid = html_writer::random_id();
-        $deleteicon = $this->pix_icon('t/delete', get_string('deletefeedback', 'assignfeedback_editpdf'));
-        $deletefeedbacklink = html_writer::link('#',
-                                                $deleteicon,
-                                                array('class'=>$linkclass, 'id'=>$deletelinkid, 'role'=>'button'));
-        $links .= ' ' . $deletefeedbacklink;
-        $links .= html_writer::end_tag('div');
+        $links .= html_writer::tag('div',
+                                   get_string('unsavedchanges', 'assignfeedback_editpdf'),
+                                   array('class'=>'assignfeedback_editpdf_unsavedchanges warning'));
 
         $html .= html_writer::div($links, 'visibleifjs');
         $header = get_string('pluginname', 'assignfeedback_editpdf');
@@ -172,8 +147,6 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
                                     'body'=>$body,
                                     'footer'=>$footer,
                                     'linkid'=>$linkid,
-                                    'deletelinkid'=>$deletelinkid,
-                                    'downloadlinkid'=>$downloadlinkid,
                                     'assignmentid'=>$widget->assignment,
                                     'userid'=>$widget->userid,
                                     'attemptnumber'=>$widget->attemptnumber,

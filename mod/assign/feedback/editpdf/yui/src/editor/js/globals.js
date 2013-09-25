@@ -37,6 +37,7 @@ var AJAXBASE = M.cfg.wwwroot + '/mod/assign/feedback/editpdf/ajax.php',
         COMMENTMENU : ' .commentdrawable a',
         ANNOTATIONCOLOURBUTTON : '.' + CSS.DIALOGUE + ' .annotationcolourbutton',
         DELETEANNOTATIONBUTTON : '.' + CSS.DIALOGUE + ' .deleteannotationbutton',
+        UNSAVEDCHANGESDIV : '.assignfeedback_editpdf_unsavedchanges',
         STAMPSBUTTON : '.' + CSS.DIALOGUE + ' .currentstampbutton',
         DIALOGUE : '.' + CSS.DIALOGUE
     },

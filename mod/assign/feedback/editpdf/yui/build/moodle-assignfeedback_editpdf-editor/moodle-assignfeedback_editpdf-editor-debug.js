@@ -39,6 +39,7 @@ var AJAXBASE = M.cfg.wwwroot + '/mod/assign/feedback/editpdf/ajax.php',
         COMMENTMENU : ' .commentdrawable a',
         ANNOTATIONCOLOURBUTTON : '.' + CSS.DIALOGUE + ' .annotationcolourbutton',
         DELETEANNOTATIONBUTTON : '.' + CSS.DIALOGUE + ' .deleteannotationbutton',
+        UNSAVEDCHANGESDIV : '.assignfeedback_editpdf_unsavedchanges',
         STAMPSBUTTON : '.' + CSS.DIALOGUE + ' .currentstampbutton',
         DIALOGUE : '.' + CSS.DIALOGUE
     },
@@ -1145,6 +1146,47 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
 
         return ANNOTATIONPEN.superclass.draw.apply(this);
     },
+
+    /**
+     * Draw the in progress edit.
+     *
+     * @public
+     * @method draw_current_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    draw_current_edit : function(edit) {
+        var drawable = new M.assignfeedback_editpdf.drawable(this.editor),
+            shape,
+            first;
+
+        shape = this.editor.graphic.addShape({
+           type: Y.Path,
+            fill: false,
+            stroke: {
+                weight: STROKEWEIGHT,
+                color: ANNOTATIONCOLOUR[this.colour]
+            }
+        });
+
+        first = true;
+        // Recreate the pen path array.
+        // Redraw all the lines.
+        Y.each(edit.path, function(position) {
+            if (first) {
+                shape.moveTo(position.x, position.y);
+                first = false;
+            } else {
+                shape.lineTo(position.x, position.y);
+            }
+        }, this);
+
+        shape.end();
+
+        drawable.shapes.push(shape);
+
+        return drawable;
+    },
+
 
     /**
      * Promote the current edit to a real annotation.
@@ -2917,8 +2959,7 @@ EDITOR.prototype = {
      * @method initializer
      */
     initializer : function() {
-        var link,
-            deletelink;
+        var link;
 
         this.quicklist = new M.assignfeedback_editpdf.quickcommentlist(this);
 
@@ -2927,11 +2968,6 @@ EDITOR.prototype = {
 
         link.on('click', this.link_handler, this);
         link.on('key', this.link_handler, 'down:13', this);
-
-        Y.log(this.get('deletelinkid'));
-        deletelink = Y.one('#' + this.get('deletelinkid'));
-        deletelink.on('click', this.delete_link_handler, this);
-        deletelink.on('key', this.delete_link_handler, 'down:13', this);
 
         this.currentedit.start = false;
         this.currentedit.end = false;
@@ -3416,6 +3452,7 @@ EDITOR.prototype = {
         this.currentedit.starttime = 0;
         this.currentedit.start = false;
         this.currentedit.end = false;
+        this.currentedit.path = [];
     },
 
     /**
@@ -3473,6 +3510,7 @@ EDITOR.prototype = {
                         if (jsondata.error) {
                             return new M.core.ajaxException(jsondata);
                         }
+                        Y.one(SELECTOR.UNSAVEDCHANGESDIV).addClass('haschanges');
                     } catch (e) {
                         return new M.core.exception(e);
                     }
@@ -3660,10 +3698,6 @@ Y.extend(EDITOR, Y.Base, EDITOR.prototype, {
             value : ''
         },
         deletelinkid : {
-            validator : Y.Lang.isString,
-            value : ''
-        },
-        downloadlinkid : {
             validator : Y.Lang.isString,
             value : ''
         },

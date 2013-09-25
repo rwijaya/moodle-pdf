@@ -76,6 +76,47 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
     },
 
     /**
+     * Draw the in progress edit.
+     *
+     * @public
+     * @method draw_current_edit
+     * @param M.assignfeedback_editpdf.edit edit
+     */
+    draw_current_edit : function(edit) {
+        var drawable = new M.assignfeedback_editpdf.drawable(this.editor),
+            shape,
+            first;
+
+        shape = this.editor.graphic.addShape({
+           type: Y.Path,
+            fill: false,
+            stroke: {
+                weight: STROKEWEIGHT,
+                color: ANNOTATIONCOLOUR[this.colour]
+            }
+        });
+
+        first = true;
+        // Recreate the pen path array.
+        // Redraw all the lines.
+        Y.each(edit.path, function(position) {
+            if (first) {
+                shape.moveTo(position.x, position.y);
+                first = false;
+            } else {
+                shape.lineTo(position.x, position.y);
+            }
+        }, this);
+
+        shape.end();
+
+        drawable.shapes.push(shape);
+
+        return drawable;
+    },
+
+
+    /**
      * Promote the current edit to a real annotation.
      *
      * @public
