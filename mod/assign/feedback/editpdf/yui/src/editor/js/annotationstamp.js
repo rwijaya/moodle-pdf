@@ -56,6 +56,11 @@ Y.extend(ANNOTATIONSTAMP, M.assignfeedback_editpdf.annotation, {
         node.setX(position.x);
         node.setY(position.y);
 
+        // Pass throught the event handlers on the div.
+        node.on('gesturemovestart', this.editor.edit_start, null, this.editor);
+        node.on('gesturemove', this.editor.edit_move, null, this.editor);
+        node.on('gesturemoveend', this.editor.edit_end, null, this.editor);
+
         drawable.nodes.push(node);
 
         this.drawable = drawable;
@@ -115,9 +120,30 @@ Y.extend(ANNOTATIONSTAMP, M.assignfeedback_editpdf.annotation, {
         this.y = bounds.y;
         this.endx = bounds.x + bounds.width;
         this.endy = bounds.y + bounds.height;
-        debugger;
         this.colour = edit.annotationcolour;
         this.path = edit.stamp;
+    },
+
+    /**
+     * Move an annotation to a new location.
+     * @public
+     * @param int newx
+     * @param int newy
+     * @method move_annotation
+     */
+    move : function(newx, newy) {
+        var diffx = newx - this.x,
+            diffy = newy - this.y;
+
+        this.x += diffx;
+        this.y += diffy;
+        this.endx += diffx;
+        this.endy += diffy;
+
+        if (this.drawable) {
+            this.drawable.erase();
+        }
+        this.editor.drawables.push(this.draw());
     }
 
 });

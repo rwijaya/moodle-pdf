@@ -660,181 +660,6 @@ Y.extend(ANNOTATION, Y.Base, {
         return this.drawable;
     },
 
-        /**
-            positions,
-            xy,
-            bounds,
-            annotationtype,
-            drawingregion = Y.one(SELECTOR.DRAWINGREGION),
-            offsetcanvas = Y.one(SELECTOR.DRAWINGCANVAS).getXY(),
-            shape,
-            first;
-
-        drawable = new M.assignfeedback_editpdf.drawable(this.editor);
-
-        if (this.type === 'stamp') {
-            // Find the matching stamp
-            Y.each(this.editor.stamps, function(stamp) {
-                if (this.path === stamp.url.replace(/^.*[\\\/]/, '')) {
-                    // We need to put the image as background otherwise the browser will try to drag the image.
-                    // Also we don't want to disable the image drag event (dragstart event), so we use background image.
-                    stampnode = Y.Node.create('<div class="stamp" style="background-image:url(\'' + stamp.url + '\')"/>');
-                    Y.one('.drawingcanvas').append(stampnode);
-                    stampnode.setStyles({
-                        height: stamp.height,
-                        width: stamp.width
-                    });
-                    stampnode.setXY([this.x, this.y]);
-
-                    drawable.nodes.push(stampnode);
-                }
-            }, this);
-        }
-
-        if (this.type === 'line') {
-            shape = this.editor.graphic.addShape({
-                type: Y.Path,
-                fill: false,
-                stroke: {
-                    weight: STROKEWEIGHT,
-                    color: ANNOTATIONCOLOUR[this.colour]
-                }
-            });
-
-            shape.moveTo(this.x, this.y);
-            shape.lineTo(this.endx, this.endy);
-            shape.end();
-        }
-
-        if (this.type === 'pen') {
-            shape = this.editor.graphic.addShape({
-               type: Y.Path,
-                fill: false,
-                stroke: {
-                    weight: STROKEWEIGHT,
-                    color: ANNOTATIONCOLOUR[this.colour]
-                }
-            });
-
-            first = true;
-            // Recreate the pen path array.
-            positions = this.path.split(':');
-            // Redraw all the lines.
-            Y.each(positions, function(position) {
-                xy = position.split(',');
-                if (first) {
-                    shape.moveTo(xy[0], xy[1]);
-                    first = false;
-                } else {
-                    shape.lineTo(xy[0], xy[1]);
-                }
-            }, this);
-
-            shape.end();
-        }
-
-        if (this.type === 'rectangle' || this.type === 'oval' ) {
-            if (this.type === 'rectangle') {
-                annotationtype = Y.Rect;
-            } if (this.type === 'oval') {
-                annotationtype = Y.Ellipse;
-            }
-
-            bounds = new M.assignfeedback_editpdf.rect();
-            bounds.bound([new M.assignfeedback_editpdf.point(this.x, this.y),
-                          new M.assignfeedback_editpdf.point(this.endx, this.endy)]);
-
-            shape = this.editor.graphic.addShape({
-                type: annotationtype,
-                width: bounds.width,
-                height: bounds.height,
-                stroke: {
-                   weight: STROKEWEIGHT,
-                   color: ANNOTATIONCOLOUR[this.colour]
-                },
-                x: bounds.x,
-                y: bounds.y
-            });
-        }
-        if (this.type === 'highlight' ) {
-            bounds = new M.assignfeedback_editpdf.rect();
-            bounds.bound([new M.assignfeedback_editpdf.point(this.x, this.y),
-                          new M.assignfeedback_editpdf.point(this.endx, this.endy)]);
-
-            highlightcolour = ANNOTATIONCOLOUR[this.colour];
-
-            // Add an alpha channel to the rgb colour.
-
-            highlightcolour = highlightcolour.replace('rgb', 'rgba');
-            highlightcolour = highlightcolour.replace(')', ',0.5)');
-
-            shape = this.editor.graphic.addShape({
-                type: Y.Rect,
-                width: bounds.width,
-                height: bounds.height,
-                stroke: false,
-                fill: {
-                    color: highlightcolour
-                },
-                x: bounds.x,
-                y: bounds.y
-            });
-        }
-
-        drawable.shapes.push(shape);
-        if (this.editor.currentannotation === this) {
-            // Draw a highlight around the annotation.
-            bounds = new M.assignfeedback_editpdf.rect();
-            bounds.bound([new M.assignfeedback_editpdf.point(this.x, this.y),
-                          new M.assignfeedback_editpdf.point(this.endx, this.endy)]);
-
-            shape = this.editor.graphic.addShape({
-                type: Y.Rect,
-                width: bounds.width,
-                height: bounds.height,
-                stroke: {
-                   weight: STROKEWEIGHT,
-                   color: SELECTEDBORDERCOLOUR
-                },
-                fill: {
-                   color: SELECTEDFILLCOLOUR
-                },
-                x: bounds.x,
-                y: bounds.y
-            });
-            drawable.shapes.push(shape);
-
-            // Add a delete X to the annotation.
-            var deleteicon = Y.Node.create('<img src="' + M.util.image_url('trash', 'assignfeedback_editpdf') + '"/>'),
-                deletelink = Y.Node.create('<a href="#" role="button"></a>');
-
-            deleteicon.setAttrs({
-                'alt': M.util.get_string('deleteannotation', 'assignfeedback_editpdf')
-            });
-            deleteicon.setStyles({
-                'backgroundColor' : 'white',
-                'border' : '2px solid ' + SELECTEDBORDERCOLOUR
-            });
-            deletelink.addClass('deleteannotationbutton');
-            deletelink.append(deleteicon);
-
-            drawingregion.append(deletelink);
-            deletelink.setData('annotation', this);
-            deletelink.setStyle('zIndex', '200');
-
-            deletelink.on('click', this.remove, this);
-            deletelink.on('key', this.remove, 'space,enter', this);
-
-            deletelink.setX(offsetcanvas[0] + bounds.x + bounds.width - 20);
-            deletelink.setY(offsetcanvas[1] + bounds.y + 4);
-            drawable.nodes.push(deletelink);
-        }
-        this.drawable = drawable;
-
-        return drawable;
-    },
-    */
-
     /**
      * Delete an annotation
      * @protected
@@ -1552,6 +1377,11 @@ Y.extend(ANNOTATIONSTAMP, M.assignfeedback_editpdf.annotation, {
         node.setX(position.x);
         node.setY(position.y);
 
+        // Pass throught the event handlers on the div.
+        node.on('gesturemovestart', this.editor.edit_start, null, this.editor);
+        node.on('gesturemove', this.editor.edit_move, null, this.editor);
+        node.on('gesturemoveend', this.editor.edit_end, null, this.editor);
+
         drawable.nodes.push(node);
 
         this.drawable = drawable;
@@ -1611,9 +1441,30 @@ Y.extend(ANNOTATIONSTAMP, M.assignfeedback_editpdf.annotation, {
         this.y = bounds.y;
         this.endx = bounds.x + bounds.width;
         this.endy = bounds.y + bounds.height;
-        debugger;
         this.colour = edit.annotationcolour;
         this.path = edit.stamp;
+    },
+
+    /**
+     * Move an annotation to a new location.
+     * @public
+     * @param int newx
+     * @param int newy
+     * @method move_annotation
+     */
+    move : function(newx, newy) {
+        var diffx = newx - this.x,
+            diffy = newy - this.y;
+
+        this.x += diffx;
+        this.y += diffy;
+        this.endx += diffx;
+        this.endy += diffy;
+
+        if (this.drawable) {
+            this.drawable.erase();
+        }
+        this.editor.drawables.push(this.draw());
     }
 
 });
@@ -1876,7 +1727,7 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
             stamplist.append(listitem);
         }, this);
 
-        body = Y.Node.create('<div/>');
+        body = Y.Node.create('<div>&nbsp;</div>');
 
         // Set the call back.
         stamplist.delegate('click', this.callback_handler, 'button', this);
@@ -3737,6 +3588,10 @@ EDITOR.prototype = {
         }
 
         if (this.currentedit.tool === 'comment') {
+            if (this.currentdrawable) {
+                this.currentdrawable.erase();
+            }
+            this.currentdrawable = false;
             comment = new M.assignfeedback_editpdf.comment(this);
             comment.init_from_edit(this.currentedit);
             this.pages[this.currentpage].comments.push(comment);
@@ -3744,6 +3599,10 @@ EDITOR.prototype = {
         } else {
             annotation = this.create_annotation(this.currentedit.tool, {});
             if (annotation) {
+                if (this.currentdrawable) {
+                    this.currentdrawable.erase();
+                }
+                this.currentdrawable = false;
                 annotation.init_from_edit(this.currentedit);
                 this.pages[this.currentpage].annotations.push(annotation);
                 this.drawables.push(annotation.draw());
@@ -3774,10 +3633,6 @@ EDITOR.prototype = {
         this.currentedit.starttime = 0;
         this.currentedit.start = false;
         this.currentedit.end = false;
-        if (this.currentdrawable) {
-            this.currentdrawable.erase();
-        }
-        this.currentdrawable = false;
     },
 
     /**

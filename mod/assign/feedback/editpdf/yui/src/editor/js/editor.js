@@ -857,6 +857,10 @@ EDITOR.prototype = {
         }
 
         if (this.currentedit.tool === 'comment') {
+            if (this.currentdrawable) {
+                this.currentdrawable.erase();
+            }
+            this.currentdrawable = false;
             comment = new M.assignfeedback_editpdf.comment(this);
             comment.init_from_edit(this.currentedit);
             this.pages[this.currentpage].comments.push(comment);
@@ -864,6 +868,10 @@ EDITOR.prototype = {
         } else {
             annotation = this.create_annotation(this.currentedit.tool, {});
             if (annotation) {
+                if (this.currentdrawable) {
+                    this.currentdrawable.erase();
+                }
+                this.currentdrawable = false;
                 annotation.init_from_edit(this.currentedit);
                 this.pages[this.currentpage].annotations.push(annotation);
                 this.drawables.push(annotation.draw());
@@ -894,10 +902,6 @@ EDITOR.prototype = {
         this.currentedit.starttime = 0;
         this.currentedit.start = false;
         this.currentedit.end = false;
-        if (this.currentdrawable) {
-            this.currentdrawable.erase();
-        }
-        this.currentdrawable = false;
     },
 
     /**

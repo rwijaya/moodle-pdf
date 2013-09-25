@@ -65,19 +65,6 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                                                                  $userid,
                                                                  $attempt);
 
-        $url = false;
-        $filename = '';
-        if ($feedbackfile && $grade) {
-            $url = moodle_url::make_pluginfile_url($this->assignment->get_context()->id,
-                                                   'assignfeedback_editpdf',
-                                                   document_services::FINAL_PDF_FILEAREA,
-                                                   $grade->id,
-                                                   '/',
-                                                   $feedbackfile->get_filename(),
-                                                   false);
-           $filename = $feedbackfile->get_filename();
-        }
-
         $stampfiles = array();
         $fs = get_file_storage();
         $syscontext = context_system::instance();
@@ -97,6 +84,20 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                 }
             }
         }
+
+        $url = false;
+        $filename = '';
+        if ($feedbackfile && $grade) {
+            $url = moodle_url::make_pluginfile_url($this->assignment->get_context()->id,
+                                                   'assignfeedback_editpdf',
+                                                   document_services::FINAL_PDF_FILEAREA,
+                                                   $grade->id,
+                                                   '/',
+                                                   $feedbackfile->get_filename(),
+                                                   false);
+           $filename = $feedbackfile->get_filename();
+        }
+
 
         $widget = new assignfeedback_editpdf_widget($this->assignment->get_instance()->id,
                                                     $userid,

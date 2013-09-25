@@ -39,7 +39,7 @@ Y.extend(STAMPPICKER, M.assignfeedback_editpdf.dropdown, {
             stamplist.append(listitem);
         }, this);
 
-        body = Y.Node.create('<div/>');
+        body = Y.Node.create('<div>&nbsp;</div>');
 
         // Set the call back.
         stamplist.delegate('click', this.callback_handler, 'button', this);
