@@ -48,8 +48,10 @@
     cursor: pointer;
 }
 
-.assignfeedback_editpdf_widget .pageheader button + button,
-.assignfeedback_editpdf_widget .pageheader select + button {
+.assignfeedback_editpdf_widget .pageheader .navigation button + button,
+.assignfeedback_editpdf_widget .pageheader .toolbar button + button,
+.assignfeedback_editpdf_widget .pageheader .navigation select + button,
+.assignfeedback_editpdf_widget .pageheader .toolbar select + button {
     border-left: 1px solid #cccccc;
     border-right: 0px;
 }
@@ -58,6 +60,7 @@
     border-right: 1px solid #cccccc;
 }
 .assignfeedback_editpdf_widget .pageheader .toolbar,
+.assignfeedback_editpdf_widget .pageheader .navigation-search,
 .assignfeedback_editpdf_widget .pageheader .navigation {
     border: 1px solid #cccccc;
     border-bottom-color: #b3b3b3;
@@ -85,20 +88,23 @@
     display: none;
 }
 
+.assignfeedback_editpdf_widget .navigation-search,
 .assignfeedback_editpdf_widget .navigation {
     float: left;
 }
 
+.dir-rtl .assignfeedback_editpdf_widget .navigation-search,
 .dir-rtl .assignfeedback_editpdf_widget .navigation {
     float: right;
 }
 .assignfeedback_editpdf_widget .toolbar {
     float: right;
 }
-.dir-rtl .assignfeedback_editpdf_widget .navigation {
+.dir-rtl .assignfeedback_editpdf_widget .toolbar {
     float: left;
 }
 .assignfeedback_editpdf_widget .navigation,
+.assignfeedback_editpdf_widget .navigation-search,
 .assignfeedback_editpdf_widget .toolbar {
     display: inline-block;
 }

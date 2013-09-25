@@ -118,7 +118,7 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $navigation1 = html_writer::div($navigation1, 'navigation', array('role'=>'navigation'));
 
         $navigation2 .= $this->render_toolbar_button('comment_search', 'searchcomments');
-        $navigation2 = html_writer::div($navigation2, 'navigation', array('role'=>'navigation'));
+        $navigation2 = html_writer::div($navigation2, 'navigation-search', array('role'=>'navigation'));
 
         $toolbar1 = '';
         $toolbar2 = '';
