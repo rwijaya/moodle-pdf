@@ -627,5 +627,16 @@ abstract class assign_plugin {
         return true;
     }
 
+    /**
+     * Allow the plugin's author to force the plugins to be enable.
+     *
+     * @return bool
+     */
+    public function force_enable() {
+        if (get_config($this->get_subtype() . '_' . $this->get_type(), 'default')) {
+            return true;
+        }
+        return false;
+    }
 
 }

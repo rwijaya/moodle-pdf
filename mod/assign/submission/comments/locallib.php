@@ -168,4 +168,19 @@ class assign_submission_comments extends assign_submission_plugin {
     public function allow_submissions() {
         return false;
     }
+
+    /**
+     * Allow the plugin's author to force the plugins to be enable.
+     *
+     * @return bool
+     */
+    public function force_enable() {
+        global $CFG;
+        $config = get_config($this->get_subtype() . '_' . $this->get_type(), 'default');
+
+        if ($config || $CFG->usecomments) {
+            return true;
+        }
+        return false;
+    }
 }

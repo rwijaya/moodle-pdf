@@ -111,4 +111,19 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                                                     document_services::FINAL_PDF_FILEAREA,
                                                     $grade->id);
     }
+
+    /**
+     * Allow the plugin's author to force the plugins to be enable.
+     *
+     * @return bool
+     */
+    public function force_enable() {
+        $testpath = assignfeedback_editpdf\pdf::test_gs_path();
+        if ($testpath->status == assignfeedback_editpdf\pdf::GSPATH_OK) {
+            if (get_config($this->get_subtype() . '_' . $this->get_type(), 'gspath')) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -390,4 +390,15 @@ class assign_feedback_comments extends assign_feedback_plugin {
         return $this->view($grade) == '';
     }
 
+    /**
+     * Force the setting for plugins is enable
+     *
+     * @return bool
+     */
+    public function force_enable() {
+        if (get_config($this->get_subtype() . '_' . $this->get_type(), 'default')) {
+            return true;
+        }
+        return false;
+    }
 }
