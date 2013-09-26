@@ -131,7 +131,7 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      *
      * @return bool
      */
-    public function force_enable() {
+    public function is_configurable() {
         return false;
     }
 }

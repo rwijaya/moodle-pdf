@@ -1351,5 +1351,26 @@ class mod_assign_locallib_testcase extends mod_assign_base_testcase {
         $this->assertNotContains($output, get_string('submitassignment', 'assign'),
                                  'Should not be able to submit after cutoff date.');
     }
+
+    public function test_submission_comment_plugin_settings() {
+        global $CFG;
+
+        $usecomments = $CFG->usecomments;
+        $this->setUser($this->editingteachers[0]);
+        $assign = $this->create_instance(array('assignsubmission_comments_enabled' => 0));
+
+        $plugin = $assign->get_submission_plugin_by_type('comments');
+        $CFG->usecomments = true;
+        $this->assertEquals('1', $plugin->is_enabled('comments'));
+        $CFG->usecomments = false;
+        $this->assertEquals('0', $plugin->is_enabled('comments'));
+
+        $assign = $this->create_instance(array('assignsubmission_comments_enabled' => 1));
+        $plugin = $assign->get_submission_plugin_by_type('comments');
+        $CFG->usecomments = false;
+        $this->assertEquals('1', $plugin->is_enabled('comments'));
+
+        $CFG->usecomments = $usecomments;
+    }
 }
 

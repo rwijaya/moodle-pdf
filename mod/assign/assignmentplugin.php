@@ -633,7 +633,7 @@ abstract class assign_plugin {
      * @return bool
      */
     public function is_configurable() {
-        return false;
+        return true;
     }
 
 }

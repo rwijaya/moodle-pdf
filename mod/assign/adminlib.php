@@ -208,23 +208,9 @@ class assign_plugin_manager {
             } else {
                 $row[] = '&nbsp;';
             }
-            $default = true;
-            if (get_config($this->subtype . '_' . $plugin, 'gspath')) {
-                $testpath = assignfeedback_editpdf\pdf::test_gs_path();
-                if ($testpath->status != assignfeedback_editpdf\pdf::GSPATH_OK) {
-                    $default = false;
-                }
-            } else if (!get_config($this->subtype . '_' . $plugin, 'default')) {
-                if ($this->subtype == 'assignsubmission' && $plugin == 'comments' && $CFG->usecomments) {
-                    $default = true;
-                }
-                else {
-                    $default = false;
-                }
-            }
 
             $exists = file_exists($CFG->dirroot . '/mod/assign/' . $shortsubtype . '/' . $plugin . '/settings.php');
-            if ($row[1] != '' && !$default && $exists) {
+            if ($row[1] != '' && $exists) {
                 $row[] = html_writer::link(new moodle_url('/admin/settings.php',
                         array('section' => $this->subtype . '_' . $plugin)), get_string('settings'));
             } else {
@@ -480,20 +466,8 @@ class assign_plugin_manager {
         $plugins = core_component::get_plugin_list_with_file($subtype, 'settings.php', false);
         $pluginsbyname = array();
         foreach ($plugins as $plugin => $plugindir) {
-            if (get_config($subtype . '_' . $plugin, 'gspath')) {
-                $testpath = assignfeedback_editpdf\pdf::test_gs_path();
-                if ($testpath->status != assignfeedback_editpdf\pdf::GSPATH_OK) {
-                    $pluginname = get_string('pluginname', $subtype . '_'.$plugin);
-                    $pluginsbyname[$pluginname] = $plugin;
-                }
-            } else if (!get_config($subtype . '_' . $plugin, 'default')) {
-                if ($subtype == 'assignsubmission' && $plugin == 'comments' && $CFG->usecomments) {
-                    // Don't add plugin if comment is enabled
-                } else {
-                    $pluginname = get_string('pluginname', $subtype . '_'.$plugin);
-                    $pluginsbyname[$pluginname] = $plugin;
-                }
-            }
+            $pluginname = get_string('pluginname', $subtype . '_'.$plugin);
+            $pluginsbyname[$pluginname] = $plugin;
         }
         ksort($pluginsbyname);
 
