@@ -104,7 +104,7 @@ Y.extend(ANNOTATIONHIGHLIGHT, M.assignfeedback_editpdf.annotation, {
                color: highlightcolour
             },
             x: bounds.x,
-            y: bounds.y
+            y: edit.start.y
         });
 
         drawable.shapes.push(shape);
@@ -126,9 +126,9 @@ Y.extend(ANNOTATIONHIGHLIGHT, M.assignfeedback_editpdf.annotation, {
         this.gradeid = this.editor.get('gradeid');
         this.pageno = this.editor.currentpage;
         this.x = bounds.x;
-        this.y = bounds.y;
+        this.y = edit.start.y;
         this.endx = bounds.x + bounds.width;
-        this.endy = bounds.y + 16;
+        this.endy = edit.start.y + 16;
         this.colour = edit.annotationcolour;
         this.page = '';
     }
