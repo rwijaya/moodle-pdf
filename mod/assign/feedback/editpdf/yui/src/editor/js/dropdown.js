@@ -47,9 +47,11 @@ Y.extend(DROPDOWN, M.core.dialogue, {
         body.prepend(headertext);
 
         body.on('clickoutside', function(e) {
-            if (e.target !== button && e.target.ancestor() !== button) {
-                e.preventDefault();
-                this.hide();
+            if (this.get('visible')) {
+                if (e.target !== button && e.target.ancestor() !== button) {
+                    e.preventDefault();
+                    this.hide();
+                }
             }
         }, this);
 
