@@ -71,6 +71,7 @@ $string['test_doesnotexist'] = 'The ghostscript path points to a non-existent fi
 $string['test_isdir'] = 'The ghostscript path points to a folder, please include the ghostscript program in the path you specify';
 $string['test_notexecutable'] = 'The ghostscript points to a file that is not executable';
 $string['test_notestfile'] = 'The test PDF is missing';
+$string['toolbarbutton'] = '{$a->tool} {$a->shortcut}';
 $string['gspath'] = 'Ghostscript path';
 $string['pagexofy'] = 'Page {$a->page} of {$a->total}';
 $string['couldnotsavepage'] = 'Could not save page {$a}';

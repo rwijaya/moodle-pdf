@@ -34,6 +34,35 @@ defined('MOODLE_INTERNAL') || die();
 class assignfeedback_editpdf_renderer extends plugin_renderer_base {
 
     /**
+     * Return the PDF button shortcut.
+     *
+     * @param string $class the name of a specific button.
+     * @return string the specific shortcut.
+     */
+    private function get_shortcut($name) {
+
+        $shortcuts = array('navigate-previous-button' => 'j',
+            'navigate-page-select' => 'k',
+            'navigate-next-button' => 'l',
+            'searchcomments' => 'h',
+            'comment' => 'z',
+            'commentcolour' => 'x',
+            'select' => 'c',
+            'pen' => 'y',
+            'line' => 'u',
+            'rectangle' => 'i',
+            'oval' => 'o',
+            'highlight' => 'p',
+            'annotationcolour' => 'r',
+            'stamp' => 'n',
+            'currentstamp' => 'm');
+
+
+        // Return the shortcut.
+        return $shortcuts[$name];
+    }
+
+    /**
      * Render a single colour button.
      *
      * @param $icon string - The key for the icon
@@ -41,12 +70,25 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
      * @param $disabled bool - The is this button disabled.
      * @return string
      */
-    private function render_toolbar_button($icon, $tool, $disabled=false) {
-        $iconalt = get_string($tool, 'assignfeedback_editpdf');
+    private function render_toolbar_button($icon, $tool, $accesskey = null, $disabled=false) {
+
+        // Build button alt text.
+        $alttext = new stdClass();
+        $alttext->tool = $tool;
+        if (!empty($accesskey)) {
+            $alttext->shortcut = '(Alt/Shift-Alt/Crtl-Option + ' . $accesskey . ')';
+        } else {
+            $alttext->shortcut = '';
+        }
+        $iconalt = get_string('toolbarbutton', 'assignfeedback_editpdf', $alttext);
+
         $iconhtml = $this->pix_icon($icon, $iconalt, 'assignfeedback_editpdf');
         $iconparams = array('data-tool'=>$tool, 'class'=>$tool . 'button');
         if ($disabled) {
             $iconparams['disabled'] = 'true';
+        }
+        if (!empty($accesskey)) {
+            $iconparams['accesskey'] = $accesskey;
         }
 
         return html_writer::tag('button', $iconhtml, $iconparams);
@@ -83,16 +125,19 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
 
         $iconalt = get_string('navigateprevious', 'assignfeedback_editpdf');
         $iconhtml = $this->pix_icon('nav_prev', $iconalt, 'assignfeedback_editpdf');
-        $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true', 'class'=>'navigate-previous-button'));
+        $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true',
+            'class'=>'navigate-previous-button', 'accesskey' => $this->get_shortcut('navigate-previous-button')));
         $pageoptions = html_writer::tag('option', get_string('gotopage', 'assignfeedback_editpdf'), array('value'=>''));
-        $navigation1 .= html_writer::tag('select', $pageoptions, array('disabled'=>'true', 'class'=>'navigate-page-select'));
+        $navigation1 .= html_writer::tag('select', $pageoptions, array('disabled'=>'true',
+            'class'=>'navigate-page-select', 'accesskey' => $this->get_shortcut('navigate-page-select')));
         $iconalt = get_string('navigatenext', 'assignfeedback_editpdf');
         $iconhtml = $this->pix_icon('nav_next', $iconalt, 'assignfeedback_editpdf');
-        $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true', 'class'=>'navigate-next-button'));
+        $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true',
+            'class'=>'navigate-next-button', 'accesskey' => $this->get_shortcut('navigate-next-button')));
 
         $navigation1 = html_writer::div($navigation1, 'navigation', array('role'=>'navigation'));
 
-        $navigation2 .= $this->render_toolbar_button('comment_search', 'searchcomments');
+        $navigation2 .= $this->render_toolbar_button('comment_search', 'searchcomments', $this->get_shortcut('searchcomments'));
         $navigation2 = html_writer::div($navigation2, 'navigation-search', array('role'=>'navigation'));
 
         $toolbar1 = '';
@@ -102,26 +147,26 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $toolbar5 = '';
 
         // Comments.
-        $toolbar1 .= $this->render_toolbar_button('comment', 'comment');
-        $toolbar1 .= $this->render_toolbar_button('background_colour_clear', 'commentcolour');
+        $toolbar1 .= $this->render_toolbar_button('comment', 'comment', $this->get_shortcut('comment'));
+        $toolbar1 .= $this->render_toolbar_button('background_colour_clear', 'commentcolour', $this->get_shortcut('commentcolour'));
         $toolbar1 = html_writer::div($toolbar1, 'toolbar', array('role'=>'toolbar'));
 
         // Select Tool.
-        $toolbar2 .= $this->render_toolbar_button('select', 'select');
+        $toolbar2 .= $this->render_toolbar_button('select', 'select', $this->get_shortcut('select'));
         $toolbar2 = html_writer::div($toolbar2, 'toolbar', array('role'=>'toolbar'));
 
         // Other Tools.
-        $toolbar3 = $this->render_toolbar_button('pen', 'pen');
-        $toolbar3 .= $this->render_toolbar_button('line', 'line');
-        $toolbar3 .= $this->render_toolbar_button('rectangle', 'rectangle');
-        $toolbar3 .= $this->render_toolbar_button('oval', 'oval');
-        $toolbar3 .= $this->render_toolbar_button('highlight', 'highlight');
-        $toolbar3 .= $this->render_toolbar_button('background_colour_clear', 'annotationcolour');
+        $toolbar3 = $this->render_toolbar_button('pen', 'pen', $this->get_shortcut('pen'));
+        $toolbar3 .= $this->render_toolbar_button('line', 'line', $this->get_shortcut('line'));
+        $toolbar3 .= $this->render_toolbar_button('rectangle', 'rectangle', $this->get_shortcut('rectangle'));
+        $toolbar3 .= $this->render_toolbar_button('oval', 'oval', $this->get_shortcut('oval'));
+        $toolbar3 .= $this->render_toolbar_button('highlight', 'highlight', $this->get_shortcut('highlight'));
+        $toolbar3 .= $this->render_toolbar_button('background_colour_clear', 'annotationcolour', $this->get_shortcut('annotationcolour'));
         $toolbar3 = html_writer::div($toolbar3, 'toolbar', array('role'=>'toolbar'));
 
         // Stamps.
-        $toolbar4 .= $this->render_toolbar_button('stamp', 'stamp');
-        $toolbar4 .= $this->render_toolbar_button('background_colour_clear', 'currentstamp');
+        $toolbar4 .= $this->render_toolbar_button('stamp', 'stamp', 'n');
+        $toolbar4 .= $this->render_toolbar_button('background_colour_clear', 'currentstamp', $this->get_shortcut('currentstamp'));
         $toolbar4 = html_writer::div($toolbar4, 'toolbar', array('role'=>'toolbar'));
 
         // Toobars written in reverse order because they are floated right.
