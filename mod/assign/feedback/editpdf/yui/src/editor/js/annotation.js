@@ -243,6 +243,7 @@ Y.extend(ANNOTATION, Y.Base, {
                 if (this.drawable) {
                     this.drawable.erase();
                 }
+                this.editor.currentannotation = false;
                 this.editor.save_current_page();
                 return;
             }

@@ -117,7 +117,7 @@ EDITOR.prototype = {
     /**
      * Current comment when the comment menu is open.
      * @property currentcomment
-     * @type Object
+     * @type M.assignfeedback_editpdf.comment
      * @protected
      */
     currentcomment : null,
@@ -125,7 +125,7 @@ EDITOR.prototype = {
     /**
      * Current annotation when the select tool is used.
      * @property currentannotation
-     * @type Object
+     * @type M.assignfeedback_editpdf.annotation
      * @protected
      */
     currentannotation : null,
@@ -559,7 +559,9 @@ EDITOR.prototype = {
             scrolltop = document.body.scrollTop,
             scrollleft = document.body.scrollLeft,
             point = {x : e.clientX - offset[0] + scrollleft,
-                     y : e.clientY - offset[1] + scrolltop};
+                     y : e.clientY - offset[1] + scrolltop},
+            selected = false,
+            lastannotation;
 
         if (this.currentedit.starttime) {
             return;
@@ -569,6 +571,35 @@ EDITOR.prototype = {
         this.currentedit.start = point;
         this.currentedit.end = {x : point.x, y : point.y};
 
+        if (this.currentedit.tool === 'select') {
+            x = this.currentedit.end.x;
+            y = this.currentedit.end.y;
+            annotations = this.pages[this.currentpage].annotations;
+            // Find the first annotation whose bounds encompass the click.
+            Y.each(annotations, function(annotation) {
+                if (((x - annotation.x) * (x - annotation.endx)) <= 0 &&
+                    ((y - annotation.y) * (y - annotation.endy)) <= 0) {
+                    selected = annotation;
+                }
+            });
+
+            if (selected) {
+                lastannotation = this.currentannotation;
+                this.currentannotation = selected;
+                if (lastannotation && lastannotation !== selected) {
+                    // Redraw the last selected annotation to remove the highlight.
+                    if (lastannotation.drawable) {
+                        lastannotation.drawable.erase();
+                        this.drawables.push(lastannotation.draw());
+                    }
+                }
+                // Redraw the newly selected annotation to show the highlight.
+                if (this.currentannotation.drawable) {
+                    this.currentannotation.drawable.erase();
+                }
+                this.drawables.push(this.currentannotation.draw());
+            }
+        }
         if (this.currentannotation) {
             // Used to calculate drag offset.
             this.currentedit.annotationstart = { x : this.currentannotation.x,
@@ -619,8 +650,7 @@ EDITOR.prototype = {
     edit_end : function() {
         var duration,
             comment,
-            annotation,
-            selected = false;
+            annotation;
 
         duration = new Date().getTime() - this.currentedit.start;
 
@@ -650,22 +680,6 @@ EDITOR.prototype = {
             }
         }
 
-        if (this.currentedit.tool === 'select') {
-            x = this.currentedit.end.x;
-            y = this.currentedit.end.y;
-            annotations = this.pages[this.currentpage].annotations;
-            Y.each(annotations, function(annotation) {
-                if (((x - annotation.x) * (x - annotation.endx)) <= 0 &&
-                    ((y - annotation.y) * (y - annotation.endy)) <= 0) {
-                    selected = annotation;
-                }
-            });
-
-            if (selected) {
-                this.currentannotation = selected;
-            }
-            this.redraw();
-        }
 
         // Save the changes.
         this.save_current_page();

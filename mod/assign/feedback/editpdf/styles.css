@@ -152,7 +152,7 @@
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
 }
-.moodle-dialogue.assignfeedback_editpdf_dropdown .moodle-dialogue-bd {
+.moodle-dialogue-base .moodle-dialogue.assignfeedback_editpdf_dropdown .moodle-dialogue-bd {
     padding: 0px;
 }
 .assignfeedback_editpdf_dropdown .moodle-dialogue-hd,
