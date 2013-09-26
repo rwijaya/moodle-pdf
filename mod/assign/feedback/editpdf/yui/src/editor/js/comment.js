@@ -168,11 +168,16 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         // Lets add a contenteditable div.
         node = Y.Node.create('<textarea/>');
         container = Y.Node.create('<div class="commentdrawable"/>');
-        menu = Y.Node.create('<a href="#"><img src="' + this.editor.get('menuicon') + '"/></a>');
+        menu = Y.Node.create('<a href="#"><img src="' + M.util.image_url('t/contextmenu', 'core') + '"/></a>');
 
         this.menulink = menu;
         container.append(node);
-        container.append(menu);
+
+        if (!this.editor.get('readonly')) {
+            container.append(menu);
+        } else {
+            node.setAttribute('readonly', 'readonly');
+        }
         if (this.width < 100) {
             this.width = 100;
         }
@@ -193,7 +198,9 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             'height' : scrollheight + 'px',
             'overflow': 'hidden'
         });
-        this.attach_events(node, menu);
+        if (!this.editor.get('readonly')) {
+            this.attach_events(node, menu);
+        }
         if (focus) {
             node.focus();
         }

@@ -50,10 +50,15 @@ if (!$assignment->can_view_submission($userid)) {
 }
 
 if ($action == 'loadallpages') {
+    $draft = true;
+    if (!has_capability('mod/assign:grade', $context)) {
+        $draft = false;
+        require_capability('mod/assign:submit', $context);
+    }
 
     $pages = document_services::get_page_images_for_attempt($assignment,
-                                                                         $userid,
-                                                                         $attemptnumber);
+                                                            $userid,
+                                                            $attemptnumber);
 
     $response = new stdClass();
     $response->pagecount = count($pages);
@@ -64,7 +69,7 @@ if ($action == 'loadallpages') {
     foreach ($pages as $id => $pagefile) {
         $index = count($response->pages);
         $page = new stdClass();
-        $comments = page_editor::get_comments($grade->id, $index);
+        $comments = page_editor::get_comments($grade->id, $index, $draft);
         $page->url = moodle_url::make_pluginfile_url($context->id,
                                                      'assignfeedback_editpdf',
                                                      document_services::PAGE_IMAGE_FILEAREA,
@@ -72,7 +77,7 @@ if ($action == 'loadallpages') {
                                                      '/',
                                                      $pagefile->get_filename())->out();
         $page->comments = $comments;
-        $annotations = page_editor::get_annotations($grade->id, $index);
+        $annotations = page_editor::get_annotations($grade->id, $index, $draft);
         $page->annotations = $annotations;
         array_push($response->pages, $page);
     }
@@ -142,6 +147,15 @@ if ($action == 'loadallpages') {
 
     echo json_encode($result);
     die();
+} else if ($action == 'revertchanges') {
+    require_capability('mod/assign:grade', $context);
+
+    $grade = $assignment->get_user_grade($userid, true);
+
+    $result = page_editor::revert_drafts($gradeid);
+
+    echo json_encode($result);
+    die();
 } else if ($action == 'removefromquicklist') {
     require_capability('mod/assign:grade', $context);
 
@@ -154,8 +168,10 @@ if ($action == 'loadallpages') {
 } else if ($action == 'deletefeedbackdocument') {
     require_capability('mod/assign:grade', $context);
 
+    $grade = $assignment->get_user_grade($userid, true);
     $result = document_services::delete_feedback_document($assignment, $userid, $attemptnumber);
 
+    $result = $result && page_editor::unrelease_drafts($grade->id);
     echo json_encode($result);
     die();
 }

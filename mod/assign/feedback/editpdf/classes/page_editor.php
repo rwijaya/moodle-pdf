@@ -36,11 +36,15 @@ class page_editor {
      * @param int pageno
      * @return array(comment)
      */
-    public static function get_comments($gradeid, $pageno) {
+    public static function get_comments($gradeid, $pageno, $draft) {
         global $DB;
 
         $comments = array();
-        $records = $DB->get_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'pageno'=>$pageno));
+        $params = array('gradeid'=>$gradeid, 'pageno'=>$pageno, 'draft'=>1);
+        if (!$draft) {
+            $params['draft'] = 0;
+        }
+        $records = $DB->get_records('assignfeedback_editpdf_cmnt', $params);
         foreach ($records as $record) {
             array_push($comments, self::comment_from_record($record));
         }
@@ -58,7 +62,7 @@ class page_editor {
     public static function set_comments($gradeid, $pageno, $comments) {
         global $DB;
 
-        $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'pageno'=>$pageno));
+        $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'pageno'=>$pageno, 'draft'=>1));
         $added = 0;
         foreach ($comments as $record) {
             // Force these.
@@ -68,6 +72,7 @@ class page_editor {
             }
             $comment->gradeid = $gradeid;
             $comment->pageno = $pageno;
+            $comment->draft = 1;
             if (self::add_comment($comment)) {
                 $added++;
             }
@@ -137,11 +142,15 @@ class page_editor {
      * @param int pageno
      * @return array(annotations)
      */
-    public static function get_annotations($gradeid, $pageno) {
+    public static function get_annotations($gradeid, $pageno, $draft) {
         global $DB;
 
+        $params = array('gradeid'=>$gradeid, 'pageno'=>$pageno, 'draft'=>1);
+        if (!$draft) {
+            $params['draft'] = 0;
+        }
         $annotations = array();
-        $records = $DB->get_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'pageno'=>$pageno));
+        $records = $DB->get_records('assignfeedback_editpdf_annot', $params);
         foreach ($records as $record) {
             array_push($annotations, self::annotation_from_record($record));
         }
@@ -166,6 +175,7 @@ class page_editor {
             $annotation = self::annotation_from_record($annotation);
             $annotation->gradeid = $gradeid;
             $annotation->pageno = $pageno;
+            $annotation->draft = 1;
             if (self::add_annotation($annotation)) {
                 $added++;
             }
@@ -207,6 +217,93 @@ class page_editor {
             return self::annotation_from_record($record);
         }
         return false;
+    }
+
+    /**
+     * Unrelease drafts
+     * @param int gradeid
+     * @return bool
+     */
+    public static function unrelease_drafts($gradeid) {
+        // Delete the non-draft annotations and comments.
+        $result = $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>0));
+        $result = $DB->delete_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>0)) && $result;
+        return $result;
+    }
+
+    /**
+     * Release the draft comments and annotations to students.
+     * @param int gradeid
+     * @return bool
+     */
+    public static function release_drafts($gradeid) {
+        global $DB;
+
+        // Delete the previous non-draft annotations and comments.
+        $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>0));
+        $DB->delete_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>0));
+
+        // Copy all the draft annotations and comments to non-drafts.
+        $records = $DB->get_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>1));
+        foreach ($records as $record) {
+            unset($record->id);
+            $record->draft = 0;
+            $DB->insert_record('assignfeedback_editpdf_annot', $record);
+        }
+        $records = $DB->get_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>1));
+        foreach ($records as $record) {
+            unset($record->id);
+            $record->draft = 0;
+            $DB->insert_record('assignfeedback_editpdf_annot', $record);
+        }
+
+        return true;
+    }
+
+    /**
+     * Has annotations or comments.
+     * @param int gradeid
+     * @return bool
+     */
+    public static function has_annotations_or_comments($gradeid) {
+        global $DB;
+
+        if ($DB->count_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>0))) {
+            return true;
+        }
+        if ($DB->count_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>0))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Aborts all draft annotations and reverts to the last version released to students.
+     * @param int gradeid
+     * @return bool
+     */
+    public static function revert_drafts($gradeid) {
+        global $DB;
+
+        // Delete the previous non-draft annotations and comments.
+        $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>1));
+        $DB->delete_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>1));
+
+        // Copy all the draft annotations and comments to non-drafts.
+        $records = $DB->get_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>0));
+        foreach ($records as $record) {
+            unset($record->id);
+            $record->draft = 0;
+            $DB->insert_record('assignfeedback_editpdf_annot', $record);
+        }
+        $records = $DB->get_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>0));
+        foreach ($records as $record) {
+            unset($record->id);
+            $record->draft = 0;
+            $DB->insert_record('assignfeedback_editpdf_annot', $record);
+        }
+
+        return true;
     }
 
     /**

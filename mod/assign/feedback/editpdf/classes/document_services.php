@@ -407,11 +407,12 @@ class document_services {
 
         $pagecount = $pdf->set_pdf($combined);
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
+        page_editor::release_drafts($grade->id);
 
         for ($i = 0; $i < $pagecount; $i++) {
             $pdf->copy_page();
-            $comments = page_editor::get_comments($grade->id, $i);
-            $annotations = page_editor::get_annotations($grade->id, $i);
+            $comments = page_editor::get_comments($grade->id, $i, false);
+            $annotations = page_editor::get_annotations($grade->id, $i, false);
 
             foreach ($comments as $comment) {
                 $pdf->add_comment($comment->rawtext,
@@ -466,7 +467,7 @@ class document_services {
     }
 
     /**
-     * This function takes the combined pdf and embeds all the comments and annotations.
+     * This function returns the generated pdf (if it exists).
      * @param mixed id or assign class
      * @param int userid
      * @param int attemptnumber (-1 means latest attempt)

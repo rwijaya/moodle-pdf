@@ -2285,11 +2285,16 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         // Lets add a contenteditable div.
         node = Y.Node.create('<textarea/>');
         container = Y.Node.create('<div class="commentdrawable"/>');
-        menu = Y.Node.create('<a href="#"><img src="' + this.editor.get('menuicon') + '"/></a>');
+        menu = Y.Node.create('<a href="#"><img src="' + M.util.image_url('t/contextmenu', 'core') + '"/></a>');
 
         this.menulink = menu;
         container.append(node);
-        container.append(menu);
+
+        if (!this.editor.get('readonly')) {
+            container.append(menu);
+        } else {
+            node.setAttribute('readonly', 'readonly');
+        }
         if (this.width < 100) {
             this.width = 100;
         }
@@ -2310,7 +2315,9 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             'height' : scrollheight + 'px',
             'overflow': 'hidden'
         });
-        this.attach_events(node, menu);
+        if (!this.editor.get('readonly')) {
+            this.attach_events(node, menu);
+        }
         if (focus) {
             node.focus();
         }
@@ -2984,9 +2991,8 @@ EDITOR.prototype = {
     initializer : function() {
         var link;
 
-        this.quicklist = new M.assignfeedback_editpdf.quickcommentlist(this);
-
         Y.log('Initialising M.assignfeedback_editpdf.editor');
+
         link = Y.one('#' + this.get('linkid'));
 
         link.on('click', this.link_handler, this);
@@ -2994,6 +3000,7 @@ EDITOR.prototype = {
 
         this.currentedit.start = false;
         this.currentedit.end = false;
+        this.quicklist = new M.assignfeedback_editpdf.quickcommentlist(this);
     },
 
     /**
@@ -3002,6 +3009,7 @@ EDITOR.prototype = {
      */
     refresh_button_state : function() {
         var button, currenttoolnode, imgurl;
+
         // Initalise the colour buttons.
         button = Y.one(SELECTOR.COMMENTCOLOURBUTTON);
 
@@ -3096,11 +3104,13 @@ EDITOR.prototype = {
             drawingcanvas = Y.one(SELECTOR.DRAWINGCANVAS);
             this.graphic = new Y.Graphic({render : SELECTOR.DRAWINGCANVAS});
 
-            drawingcanvas.on('gesturemovestart', this.edit_start, null, this);
-            drawingcanvas.on('gesturemove', this.edit_move, null, this);
-            drawingcanvas.on('gesturemoveend', this.edit_end, null, this);
+            if (!this.get('readonly')) {
+                drawingcanvas.on('gesturemovestart', this.edit_start, null, this);
+                drawingcanvas.on('gesturemove', this.edit_move, null, this);
+                drawingcanvas.on('gesturemoveend', this.edit_end, null, this);
 
-            this.refresh_button_state();
+                this.refresh_button_state();
+            }
         } else {
             this.dialogue.show();
         }
@@ -3211,6 +3221,13 @@ EDITOR.prototype = {
             stampfiles,
             picker;
 
+        searchcommentsbutton = Y.one(SELECTOR.SEARCHCOMMENTSBUTTON);
+        searchcommentsbutton.on('click', this.open_search_comments, this);
+        searchcommentsbutton.on('key', this.open_search_comments, 'down:13', this);
+
+        if (this.get('readonly')) {
+            return;
+        }
         // Setup the tool buttons.
         Y.each(TOOLSELECTOR, function(selector, tool) {
             toolnode = Y.one(selector);
@@ -3220,9 +3237,6 @@ EDITOR.prototype = {
         }, this);
 
         // Set the default tool.
-        searchcommentsbutton = Y.one(SELECTOR.SEARCHCOMMENTSBUTTON);
-        searchcommentsbutton.on('click', this.open_search_comments, this);
-        searchcommentsbutton.on('key', this.open_search_comments, 'down:13', this);
 
         commentcolourbutton = Y.one(SELECTOR.COMMENTCOLOURBUTTON);
         picker = new M.assignfeedback_editpdf.colourpicker({
@@ -3760,9 +3774,9 @@ Y.extend(EDITOR, Y.Base, EDITOR.prototype, {
             validator : Y.Lang.isString,
             value : ''
         },
-        menuicon : {
-            validator : Y.Lang.isString,
-            value : ''
+        readonly : {
+            validator : Y.Lang.isBoolean,
+            value : true
         },
         stampfiles : {
             validator : Y.Lang.isArray,

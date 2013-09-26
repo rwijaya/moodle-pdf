@@ -302,7 +302,8 @@ class pdf extends \FPDI {
             case 'pen':
                 if ($path) {
                     $scalepath = array();
-                    foreach ($path as $point) {
+                    $points = preg_split('/[,:]/', $path);
+                    foreach ($points as $point) {
                         $scalepath[] = intval($point) * $this->scale;
                     }
                     $this->PolyLine($scalepath, 'S');

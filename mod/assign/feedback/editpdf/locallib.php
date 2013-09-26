@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 use \assignfeedback_editpdf\document_services;
+use \assignfeedback_editpdf\page_editor;
 
 /**
  * library class for editpdf feedback plugin extending feedback plugin base class
@@ -45,17 +46,14 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
-     * Get form elements for grading form
+     * Create a widget for rendering the editor.
      *
-     * @param stdClass $grade
-     * @param MoodleQuickForm $mform
-     * @param stdClass $data
      * @param int $userid
-     * @return bool true if elements were added to the form
+     * @param stdClass $grade
+     * @param bool $readonly
+     * @return assignfeedback_editpdf_widget
      */
-    public function get_form_elements_for_user($grade, MoodleQuickForm $mform, stdClass $data, $userid) {
-        global $PAGE;
-        $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
+    public function get_widget($userid, $grade, $readonly) {
         $attempt = -1;
         if ($grade) {
             $attempt = $grade->attemptnumber;
@@ -104,11 +102,40 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                                                     $attempt,
                                                     $url,
                                                     $filename,
-                                                    $stampfiles);
+                                                    $stampfiles,
+                                                    $readonly);
+        return $widget;
+    }
 
-        $html = $renderer->render($widget);
-        $mform->addElement('static', 'editpdf', get_string('editpdf', 'assignfeedback_editpdf'), $html);
-        $mform->addHelpButton('editpdf', 'editpdf', 'assignfeedback_editpdf');
+    /**
+     * Get form elements for grading form
+     *
+     * @param stdClass $grade
+     * @param MoodleQuickForm $mform
+     * @param stdClass $data
+     * @param int $userid
+     * @return bool true if elements were added to the form
+     */
+    public function get_form_elements_for_user($grade, MoodleQuickForm $mform, stdClass $data, $userid) {
+        global $PAGE;
+
+        $attempt = -1;
+        if ($grade) {
+            $attempt = $grade->attemptnumber;
+        }
+
+        $files = document_services::list_compatible_submission_files_for_attempt($this->assignment, $userid, $attempt);
+        // Only show the editor if there was a compatible file submitted.
+        if (count($files)) {
+
+            $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
+
+            $widget = $this->get_widget($userid, $grade, false);
+
+            $html = $renderer->render($widget);
+            $mform->addElement('static', 'editpdf', get_string('editpdf', 'assignfeedback_editpdf'), $html);
+            $mform->addHelpButton('editpdf', 'editpdf', 'assignfeedback_editpdf');
+        }
     }
 
     /**
@@ -142,8 +169,21 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * @return string
      */
     public function view(stdClass $grade) {
-        return $this->assignment->render_area_files('assignfeedback_editpdf',
-                                                    document_services::FINAL_PDF_FILEAREA,
-                                                    $grade->id);
+        global $PAGE;
+        $html = '';
+        // Show a link to download the pdf.
+        if (page_editor::has_annotations_or_comments($grade->id)) {
+            $html = $this->assignment->render_area_files('assignfeedback_editpdf',
+                                                         document_services::FINAL_PDF_FILEAREA,
+                                                         $grade->id);
+
+            // Also show the link to the read-only interface.
+            $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
+            $widget = $this->get_widget($grade->userid, $grade, true);
+
+            $html .= $renderer->render($widget);
+        }
+        return $html;
     }
+
 }

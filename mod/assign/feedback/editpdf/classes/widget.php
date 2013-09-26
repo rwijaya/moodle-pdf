@@ -45,6 +45,8 @@ class assignfeedback_editpdf_widget implements renderable {
     public $downloadfilename = null;
     /** @var string[] $stampfiles */
     public $stampfiles = array();
+    /** @var bool $readonly */
+    public $readonly = true;
 
     /**
      * Constructor
@@ -54,13 +56,15 @@ class assignfeedback_editpdf_widget implements renderable {
      * @param moodle_url $downloadurl - A url to download the current generated pdf.
      * @param string $downloadfilename - Name of the generated pdf.
      * @param string[] $stampfiles - The file names of the stamps.
+     * @param bool $readonly - Show the readonly interface (no tools).
      */
-    public function __construct($assignment, $userid, $attemptnumber, $downloadurl, $downloadfilename, $stampfiles) {
+    public function __construct($assignment, $userid, $attemptnumber, $downloadurl, $downloadfilename, $stampfiles, $readonly) {
         $this->assignment = $assignment;
         $this->userid = $userid;
         $this->attemptnumber = $attemptnumber;
         $this->downloadurl = $downloadurl;
         $this->downloadfilename = $downloadfilename;
         $this->stampfiles = $stampfiles;
+        $this->readonly = $readonly;
     }
 }

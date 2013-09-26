@@ -76,7 +76,7 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $alttext = new stdClass();
         $alttext->tool = $tool;
         if (!empty($accesskey)) {
-            $alttext->shortcut = '(Alt/Shift-Alt/Crtl-Option + ' . $accesskey . ')';
+            $alttext->shortcut = '(Alt/Shift-Alt/Ctrl-Option + ' . $accesskey . ')';
         } else {
             $alttext->shortcut = '';
         }
@@ -144,40 +144,40 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $toolbar2 = '';
         $toolbar3 = '';
         $toolbar4 = '';
-        $toolbar5 = '';
+        if (!$widget->readonly) {
 
-        // Comments.
-        $toolbar1 .= $this->render_toolbar_button('comment', 'comment', $this->get_shortcut('comment'));
-        $toolbar1 .= $this->render_toolbar_button('background_colour_clear', 'commentcolour', $this->get_shortcut('commentcolour'));
-        $toolbar1 = html_writer::div($toolbar1, 'toolbar', array('role'=>'toolbar'));
+            // Comments.
+            $toolbar1 .= $this->render_toolbar_button('comment', 'comment', $this->get_shortcut('comment'));
+            $toolbar1 .= $this->render_toolbar_button('background_colour_clear', 'commentcolour', $this->get_shortcut('commentcolour'));
+            $toolbar1 = html_writer::div($toolbar1, 'toolbar', array('role'=>'toolbar'));
 
-        // Select Tool.
-        $toolbar2 .= $this->render_toolbar_button('select', 'select', $this->get_shortcut('select'));
-        $toolbar2 = html_writer::div($toolbar2, 'toolbar', array('role'=>'toolbar'));
+            // Select Tool.
+            $toolbar2 .= $this->render_toolbar_button('select', 'select', $this->get_shortcut('select'));
+            $toolbar2 = html_writer::div($toolbar2, 'toolbar', array('role'=>'toolbar'));
 
-        // Other Tools.
-        $toolbar3 = $this->render_toolbar_button('pen', 'pen', $this->get_shortcut('pen'));
-        $toolbar3 .= $this->render_toolbar_button('line', 'line', $this->get_shortcut('line'));
-        $toolbar3 .= $this->render_toolbar_button('rectangle', 'rectangle', $this->get_shortcut('rectangle'));
-        $toolbar3 .= $this->render_toolbar_button('oval', 'oval', $this->get_shortcut('oval'));
-        $toolbar3 .= $this->render_toolbar_button('highlight', 'highlight', $this->get_shortcut('highlight'));
-        $toolbar3 .= $this->render_toolbar_button('background_colour_clear', 'annotationcolour', $this->get_shortcut('annotationcolour'));
-        $toolbar3 = html_writer::div($toolbar3, 'toolbar', array('role'=>'toolbar'));
+            // Other Tools.
+            $toolbar3 = $this->render_toolbar_button('pen', 'pen', $this->get_shortcut('pen'));
+            $toolbar3 .= $this->render_toolbar_button('line', 'line', $this->get_shortcut('line'));
+            $toolbar3 .= $this->render_toolbar_button('rectangle', 'rectangle', $this->get_shortcut('rectangle'));
+            $toolbar3 .= $this->render_toolbar_button('oval', 'oval', $this->get_shortcut('oval'));
+            $toolbar3 .= $this->render_toolbar_button('highlight', 'highlight', $this->get_shortcut('highlight'));
+            $toolbar3 .= $this->render_toolbar_button('background_colour_clear', 'annotationcolour', $this->get_shortcut('annotationcolour'));
+            $toolbar3 = html_writer::div($toolbar3, 'toolbar', array('role'=>'toolbar'));
 
-        // Stamps.
-        $toolbar4 .= $this->render_toolbar_button('stamp', 'stamp', 'n');
-        $toolbar4 .= $this->render_toolbar_button('background_colour_clear', 'currentstamp', $this->get_shortcut('currentstamp'));
-        $toolbar4 = html_writer::div($toolbar4, 'toolbar', array('role'=>'toolbar'));
+            // Stamps.
+            $toolbar4 .= $this->render_toolbar_button('stamp', 'stamp', 'n');
+            $toolbar4 .= $this->render_toolbar_button('background_colour_clear', 'currentstamp', $this->get_shortcut('currentstamp'));
+            $toolbar4 = html_writer::div($toolbar4, 'toolbar', array('role'=>'toolbar'));
+        }
 
         // Toobars written in reverse order because they are floated right.
         $pageheader = html_writer::div($navigation1 .
                                        $navigation2 .
-                                       $toolbar5 .
                                        $toolbar4 .
                                        $toolbar3 .
                                        $toolbar2 .
                                        $toolbar1,
-                                        'pageheader');
+                                       'pageheader');
         $body = $pageheader;
 
         $loading = $this->pix_icon('i/loading', get_string('loadingeditor', 'assignfeedback_editpdf'), 'moodle', array('class'=>'loading'));
@@ -196,7 +196,7 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
                                     'userid'=>$widget->userid,
                                     'attemptnumber'=>$widget->attemptnumber,
                                     'stampfiles'=>$widget->stampfiles,
-                                    'menuicon'=>$this->pix_url('t/contextmenu')->out(true)));
+                                    'readonly'=>$widget->readonly));
 
         $this->page->requires->yui_module('moodle-assignfeedback_editpdf-editor',
                                           'M.assignfeedback_editpdf.editor.init',
