@@ -632,10 +632,7 @@ abstract class assign_plugin {
      *
      * @return bool
      */
-    public function force_enable() {
-        if (get_config($this->get_subtype() . '_' . $this->get_type(), 'default')) {
-            return true;
-        }
+    public function is_configurable() {
         return false;
     }
 

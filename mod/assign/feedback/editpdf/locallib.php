@@ -113,17 +113,25 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
-     * Allow the plugin's author to force the plugins to be enable.
+     * Allows hiding this plugin from the feedback screen if it is not enabled.
      *
-     * @return bool
+     * @return bool - if false - this plugin will not show editpdf feedback
      */
-    public function force_enable() {
+    public function is_enabled() {
         $testpath = assignfeedback_editpdf\pdf::test_gs_path();
         if ($testpath->status == assignfeedback_editpdf\pdf::GSPATH_OK) {
             if (get_config($this->get_subtype() . '_' . $this->get_type(), 'gspath')) {
                 return true;
             }
         }
+        return false;
+    }
+    /**
+     * Allow the plugin's author to force the plugins to be enable.
+     *
+     * @return bool
+     */
+    public function force_enable() {
         return false;
     }
 }

@@ -395,7 +395,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
      *
      * @return bool
      */
-    public function force_enable() {
+    public function is_configurable() {
         if (get_config($this->get_subtype() . '_' . $this->get_type(), 'default')) {
             return true;
         }

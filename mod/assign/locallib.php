@@ -964,7 +964,7 @@ class assign {
      */
     protected function add_plugin_settings(assign_plugin $plugin, MoodleQuickForm $mform, & $pluginsenabled) {
         global $CFG;
-        if ($plugin->is_visible() && !$plugin->force_enable()) {
+        if ($plugin->is_visible() && !$plugin->is_configurable()) {
             $name = $plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled';
             $label = $plugin->get_name();
             $label .= ' ' . $this->get_renderer()->help_icon('enabled', $plugin->get_subtype() . '_' . $plugin->get_type());
