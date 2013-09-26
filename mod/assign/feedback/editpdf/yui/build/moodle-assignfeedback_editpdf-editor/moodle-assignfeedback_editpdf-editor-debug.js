@@ -2277,7 +2277,8 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             drawingregion = Y.one(SELECTOR.DRAWINGREGION),
             container,
             menu,
-            position;
+            position,
+            scrollheight;
 
         // Lets add a contenteditable div.
         node = Y.Node.create('<textarea/>');
@@ -2302,7 +2303,11 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         container.setY(position.y);
         drawable.nodes.push(container);
         node.set('value', this.rawtext);
-        node.setStyle('height', node.get('scrollHeight') - 8 + 'px');
+        scrollheight = node.get('scrollHeight'),
+        node.setStyles({
+            'height' : scrollheight + 'px',
+            'overflow': 'hidden'
+        });
         this.attach_events(node, menu);
         if (focus) {
             node.focus();
@@ -2352,8 +2357,15 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
         menu.setData('comment', this);
 
         node.on('keyup', function() {
-            var scrollHeight = node.get('scrollHeight') - 8;
-            node.setStyle('height', scrollHeight + 'px');
+            var scrollheight = node.get('scrollHeight'),
+                height = parseInt(node.getStyle('height'), 10);
+
+            // Webkit scrollheight fix.
+            if (scrollheight === height + 8) {
+                scrollheight -= 8;
+            }
+            node.setStyle('height', scrollheight + 'px');
+
         });
 
         node.on('gesturemovestart', function(e) {
