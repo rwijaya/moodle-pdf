@@ -132,7 +132,7 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
         bounds.bound(edit.path);
 
         for (i = 0; i < edit.path.length; i++) {
-            pathlist.push(edit.path[i].x + ',' + edit.path[i].y);
+            pathlist.push(parseInt(edit.path[i].x, 10) + ',' + parseInt(edit.path[i].y, 10));
         }
 
         this.gradeid = this.editor.get('gradeid');

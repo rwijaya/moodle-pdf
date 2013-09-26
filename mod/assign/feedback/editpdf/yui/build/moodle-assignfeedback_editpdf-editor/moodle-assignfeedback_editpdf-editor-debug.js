@@ -577,10 +577,10 @@ Y.extend(ANNOTATION, Y.Base, {
     clean : function() {
         return {
             gradeid : this.gradeid,
-            x : this.x,
-            y : this.y,
-            endx : this.endx,
-            endy : this.endy,
+            x : parseInt(this.x, 10),
+            y : parseInt(this.y, 10),
+            endx : parseInt(this.endx, 10),
+            endy : parseInt(this.endy, 10),
             type : this.type,
             path : this.path,
             pageno : this.pageno,
@@ -1205,7 +1205,7 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
         bounds.bound(edit.path);
 
         for (i = 0; i < edit.path.length; i++) {
-            pathlist.push(edit.path[i].x + ',' + edit.path[i].y);
+            pathlist.push(parseInt(edit.path[i].x, 10) + ',' + parseInt(edit.path[i].y, 10));
         }
 
         this.gradeid = this.editor.get('gradeid');
@@ -2255,9 +2255,9 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
     this.clean = function() {
         return {
             gradeid : this.gradeid,
-            x : this.x,
-            y : this.y,
-            width : this.width,
+            x : parseInt(this.x, 10),
+            y : parseInt(this.y, 10),
+            width : parseInt(this.width, 10),
             rawtext : this.rawtext,
             pageno : this.currentpage,
             colour : this.colour
@@ -3362,9 +3362,10 @@ EDITOR.prototype = {
      * @method edit_start
      */
     edit_start : function(e) {
-        var offset = Y.one(SELECTOR.DRAWINGCANVAS).getXY(),
-            scrolltop = document.body.scrollTop,
-            scrollleft = document.body.scrollLeft,
+        var canvas = Y.one(SELECTOR.DRAWINGCANVAS),
+            offset = canvas.getXY(),
+            scrolltop = canvas.get('docScrollY'),
+            scrollleft = canvas.get('docScrollX'),
             point = {x : e.clientX - offset[0] + scrollleft,
                      y : e.clientY - offset[1] + scrolltop},
             selected = false,
@@ -3422,8 +3423,9 @@ EDITOR.prototype = {
      */
     edit_move : function(e) {
         var bounds = this.get_canvas_bounds(),
-            clientpoint = new M.assignfeedback_editpdf.point(e.clientX + document.body.scrollLeft,
-                                                             e.clientY + document.body.scrollTop),
+            canvas = Y.one(SELECTOR.DRAWINGCANVAS),
+            clientpoint = new M.assignfeedback_editpdf.point(e.clientX + canvas.get('docScrollX'),
+                                                             e.clientY + canvas.get('docScrollY')),
             point = this.get_canvas_coordinates(clientpoint);
 
         // Ignore events out of the canvas area.

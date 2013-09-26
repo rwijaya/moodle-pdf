@@ -83,9 +83,14 @@ class page_editor {
      * @return array(comment)
      */
     public static function comment_from_record(\stdClass $record) {
+        $intcols = array('width', 'x', 'y');
         $comment = new comment();
         foreach ($comment as $key => $value) {
-            $comment->$key = $record->$key;
+            if (in_array($key, $intcols)) {
+                $comment->$key = intval($record->$key);
+            } else {
+                $comment->$key = $record->$key;
+            }
         }
         return $comment;
     }
@@ -177,9 +182,14 @@ class page_editor {
      * @return annotation
      */
     public static function annotation_from_record(\stdClass $record) {
+        $intcols = array('endx', 'endy', 'x', 'y');
         $annotation = new annotation();
         foreach ($annotation as $key => $value) {
-            $annotation->$key = $record->$key;
+            if (in_array($key, $intcols)) {
+                $annotation->$key = intval($record->$key);
+            } else {
+                $annotation->$key = $record->$key;
+            }
         }
         return $annotation;
     }

@@ -570,9 +570,10 @@ EDITOR.prototype = {
      * @method edit_start
      */
     edit_start : function(e) {
-        var offset = Y.one(SELECTOR.DRAWINGCANVAS).getXY(),
-            scrolltop = document.body.scrollTop,
-            scrollleft = document.body.scrollLeft,
+        var canvas = Y.one(SELECTOR.DRAWINGCANVAS),
+            offset = canvas.getXY(),
+            scrolltop = canvas.get('docScrollY'),
+            scrollleft = canvas.get('docScrollX'),
             point = {x : e.clientX - offset[0] + scrollleft,
                      y : e.clientY - offset[1] + scrolltop},
             selected = false,
@@ -630,8 +631,9 @@ EDITOR.prototype = {
      */
     edit_move : function(e) {
         var bounds = this.get_canvas_bounds(),
-            clientpoint = new M.assignfeedback_editpdf.point(e.clientX + document.body.scrollLeft,
-                                                             e.clientY + document.body.scrollTop),
+            canvas = Y.one(SELECTOR.DRAWINGCANVAS),
+            clientpoint = new M.assignfeedback_editpdf.point(e.clientX + canvas.get('docScrollX'),
+                                                             e.clientY + canvas.get('docScrollY')),
             point = this.get_canvas_coordinates(clientpoint);
 
         // Ignore events out of the canvas area.

@@ -44,6 +44,9 @@
 .yui3-commentmenu-hidden {
     display: none;
 }
+.assignfeedback_editpdf_widget .pageheader button:active {
+    background-color: #ccc;
+}
 .assignfeedback_editpdf_widget .pageheader select,
 .assignfeedback_editpdf_widget .pageheader button {
     background: none;
@@ -219,7 +222,7 @@ ul.assignfeedback_editpdf_menu {
 .assignfeedback_editpdf_widget .commentdrawable textarea {
     padding: 4px;
     padding-right: 20px;
-    resize: horizontal;
+    resize: none;
     overflow: hidden;
     color: black;
     border: 2px solid #ccc;

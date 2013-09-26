@@ -140,9 +140,9 @@ COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
     this.clean = function() {
         return {
             gradeid : this.gradeid,
-            x : this.x,
-            y : this.y,
-            width : this.width,
+            x : parseInt(this.x, 10),
+            y : parseInt(this.y, 10),
+            width : parseInt(this.width, 10),
             rawtext : this.rawtext,
             pageno : this.currentpage,
             colour : this.colour

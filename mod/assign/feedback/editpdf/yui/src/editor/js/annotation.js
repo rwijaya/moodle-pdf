@@ -143,10 +143,10 @@ Y.extend(ANNOTATION, Y.Base, {
     clean : function() {
         return {
             gradeid : this.gradeid,
-            x : this.x,
-            y : this.y,
-            endx : this.endx,
-            endy : this.endy,
+            x : parseInt(this.x, 10),
+            y : parseInt(this.y, 10),
+            endx : parseInt(this.endx, 10),
+            endy : parseInt(this.endy, 10),
             type : this.type,
             path : this.path,
             pageno : this.pageno,
