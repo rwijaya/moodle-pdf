@@ -131,6 +131,14 @@ EDITOR.prototype = {
     currentannotation : null,
 
     /**
+     * Last selected annotation tool
+     * @property lastannotationtool
+     * @type String
+     * @protected
+     */
+    lastanntationtool : "pen",
+
+    /**
      * The users comments quick list
      * @property quicklist
      * @type M.assignfeedback_editpdf.quickcommentlist
@@ -340,7 +348,7 @@ EDITOR.prototype = {
             this.dialogue.hide();
             // Display alert dialogue.
             if (M.cfg.developerdebug) {
-               errormsg = responsetext;
+                errormsg = responsetext;
             } else {
                 errormsg = M.util.get_string('cannotopenpdf', 'assignfeedback_editpdf');
             }
@@ -400,8 +408,8 @@ EDITOR.prototype = {
         // Setup the tool buttons.
         Y.each(TOOLSELECTOR, function(selector, tool) {
             toolnode = Y.one(selector);
-            toolnode.on('click', this.handle_toolbutton, this, tool);
-            toolnode.on('key', this.handle_toolbutton, 'down:13', this, tool);
+            toolnode.on('click', this.handle_tool_button, this, tool);
+            toolnode.on('key', this.handle_tool_button, 'down:13', this, tool);
             toolnode.setAttribute('aria-pressed', 'false');
         }, this);
 
@@ -421,7 +429,7 @@ EDITOR.prototype = {
                     colour = e.target.ancestor().getAttribute('data-colour');
                 }
                 this.currentedit.commentcolour = colour;
-                this.refresh_button_state();
+                this.handle_tool_button(e, "comment");
             },
             context: this
         });
@@ -437,7 +445,11 @@ EDITOR.prototype = {
                     colour = e.target.ancestor().getAttribute('data-colour');
                 }
                 this.currentedit.annotationcolour = colour;
-                this.refresh_button_state();
+                if (this.lastannotationtool) {
+                    this.handle_tool_button(e, this.lastannotationtool);
+                } else {
+                    this.handle_tool_button(e, "pen");
+                }
             },
             context: this
         });
@@ -470,9 +482,9 @@ EDITOR.prototype = {
     /**
      * Change the current tool.
      * @protected
-     * @method handle_toolbutton
+     * @method handle_tool_button
      */
-    handle_toolbutton : function(e, tool) {
+    handle_tool_button : function(e, tool) {
         var currenttoolnode;
 
         e.preventDefault();
@@ -482,6 +494,9 @@ EDITOR.prototype = {
         currenttoolnode.removeClass('assignfeedback_editpdf_selectedbutton');
         currenttoolnode.setAttribute('aria-pressed', 'false');
         this.currentedit.tool = tool;
+        if (tool !== "comment" && tool !== "select") {
+            this.lastannotationtool = tool;
+        }
         this.refresh_button_state();
     },
 

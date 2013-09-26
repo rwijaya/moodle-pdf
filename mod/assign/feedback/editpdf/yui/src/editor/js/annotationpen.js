@@ -92,7 +92,7 @@ Y.extend(ANNOTATIONPEN, M.assignfeedback_editpdf.annotation, {
             fill: false,
             stroke: {
                 weight: STROKEWEIGHT,
-                color: ANNOTATIONCOLOUR[this.colour]
+                color: ANNOTATIONCOLOUR[edit.annotationcolour]
             }
         });
 
