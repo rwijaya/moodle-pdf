@@ -123,15 +123,24 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
         $navigation1 = '';
         $navigation2 = '';
 
+        // Pick the correct arrow icons for right to left mode.
+        if (right_to_left()) {
+            $nav_prev = 'nav_next';
+            $nav_next = 'nav_prev';
+        } else {
+            $nav_prev = 'nav_prev';
+            $nav_next = 'nav_next';
+        }
+
         $iconalt = get_string('navigateprevious', 'assignfeedback_editpdf');
-        $iconhtml = $this->pix_icon('nav_prev', $iconalt, 'assignfeedback_editpdf');
+        $iconhtml = $this->pix_icon($nav_prev, $iconalt, 'assignfeedback_editpdf');
         $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true',
             'class'=>'navigate-previous-button', 'accesskey' => $this->get_shortcut('navigate-previous-button')));
         $pageoptions = html_writer::tag('option', get_string('gotopage', 'assignfeedback_editpdf'), array('value'=>''));
         $navigation1 .= html_writer::tag('select', $pageoptions, array('disabled'=>'true',
             'class'=>'navigate-page-select', 'accesskey' => $this->get_shortcut('navigate-page-select')));
         $iconalt = get_string('navigatenext', 'assignfeedback_editpdf');
-        $iconhtml = $this->pix_icon('nav_next', $iconalt, 'assignfeedback_editpdf');
+        $iconhtml = $this->pix_icon($nav_next, $iconalt, 'assignfeedback_editpdf');
         $navigation1 .= html_writer::tag('button', $iconhtml, array('disabled'=>'true',
             'class'=>'navigate-next-button', 'accesskey' => $this->get_shortcut('navigate-next-button')));
 
