@@ -63,6 +63,7 @@ class page_editor {
         global $DB;
 
         $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'pageno'=>$pageno, 'draft'=>1));
+
         $added = 0;
         foreach ($comments as $record) {
             // Force these.
@@ -91,10 +92,12 @@ class page_editor {
         $intcols = array('width', 'x', 'y');
         $comment = new comment();
         foreach ($comment as $key => $value) {
-            if (in_array($key, $intcols)) {
-                $comment->$key = intval($record->$key);
-            } else {
-                $comment->$key = $record->$key;
+            if (isset($record->$key)) {
+                if (in_array($key, $intcols)) {
+                    $comment->$key = intval($record->$key);
+                } else {
+                    $comment->$key = $record->$key;
+                }
             }
         }
         return $comment;
@@ -195,10 +198,12 @@ class page_editor {
         $intcols = array('endx', 'endy', 'x', 'y');
         $annotation = new annotation();
         foreach ($annotation as $key => $value) {
-            if (in_array($key, $intcols)) {
-                $annotation->$key = intval($record->$key);
-            } else {
-                $annotation->$key = $record->$key;
+            if (isset($record->$key)) {
+                if (in_array($key, $intcols)) {
+                    $annotation->$key = intval($record->$key);
+                } else {
+                    $annotation->$key = $record->$key;
+                }
             }
         }
         return $annotation;

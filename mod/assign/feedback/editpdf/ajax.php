@@ -88,6 +88,7 @@ if ($action == 'loadallpages') {
     require_capability('mod/assign:grade', $context);
 
     $response = new stdClass();
+    $response->errors = array();
 
     $grade = $assignment->get_user_grade($userid, true);
 
