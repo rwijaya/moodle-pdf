@@ -358,6 +358,9 @@ class document_services {
             $groupid = groups_get_activity_group($assignment->get_course_module(), true);
             $groupname = groups_get_group_name($groupid).'-';
         }
+        if ($groupname == '-') {
+            $groupname = '';
+        }
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
         $user = $DB->get_record('user', array('id'=>$userid), '*', MUST_EXIST);
 
@@ -432,8 +435,6 @@ class document_services {
                                      $annotation->path);
             }
         }
-
-
 
         $filename = self::get_downloadable_feedback_filename($assignment, $userid, $attemptnumber);
         $filename = clean_param($filename, PARAM_FILE);

@@ -186,4 +186,17 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
         return $html;
     }
 
+    /**
+     * The assignment has been deleted - remove the plugin specific data
+     *
+     * @return bool
+     */
+    public function delete_instance() {
+        global $DB;
+        $grades = $DB->get_records('assign_grades', array('assignment'=>$this->assignment->id), '', 'id');
+        list($gradeids, $params) = $DB->get_in_or_equal(array_keys($grades), SQL_PARAMS_NAMED);
+        $DB->delete_records_select('assignfeedback_editpdf_annot', $gradeids, $params);
+        $DB->delete_records_select('assignfeedback_editpdf_cmnt', $gradeids, $params);
+    }
+
 }
