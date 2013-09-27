@@ -69,6 +69,8 @@ class comments_quick_list {
      * @return comment or false
      */
     public static function get_comment($commentid) {
+        global $DB;
+
         $record = $DB->get_record('assignfeedback_editpdf_quick', array('id'=>$commentid), '*', IGNORE_MISSING);
         if ($record) {
             return $record;

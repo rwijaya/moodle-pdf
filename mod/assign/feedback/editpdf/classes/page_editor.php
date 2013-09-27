@@ -133,7 +133,7 @@ class page_editor {
      */
     public static function remove_comment($commentid) {
         global $DB;
-        return $DB->delete_record('assignfeedback_editpdf_cmnt', array('id'=>$commentid));
+        return $DB->delete_records('assignfeedback_editpdf_cmnt', array('id'=>$commentid));
     }
 
     /**
@@ -225,6 +225,8 @@ class page_editor {
      * @return bool
      */
     public static function unrelease_drafts($gradeid) {
+        global $DB;
+
         // Delete the non-draft annotations and comments.
         $result = $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>0));
         $result = $DB->delete_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>0)) && $result;
@@ -328,6 +330,6 @@ class page_editor {
     public static function remove_annotation($annotationid) {
         global $DB;
 
-        return $DB->delete_record('assignfeedback_editpdf_annot', array('id'=>$annotationid));
+        return $DB->delete_records('assignfeedback_editpdf_annot', array('id'=>$annotationid));
     }
 }

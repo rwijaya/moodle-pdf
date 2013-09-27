@@ -44,6 +44,7 @@ $string['green'] = 'Green';
 $string['yellow'] = 'Yellow';
 $string['clear'] = 'Clear';
 $string['white'] = 'White';
+$string['stamps'] = 'Stamps';
 $string['black'] = 'Black';
 $string['pen'] = 'Pen';
 $string['tool'] = 'Tool';
