@@ -168,4 +168,14 @@ class assign_submission_comments extends assign_submission_plugin {
     public function allow_submissions() {
         return false;
     }
+
+    public function is_configurable() {
+        global $CFG;
+        if (isset($CFG->usecomments) && $CFG->usecomments) {
+            set_config('default', 1, 'assignsubmission_comments');
+        } else {
+            set_config('default', 0, 'assignsubmission_comments');
+        }
+        return true;
+    }
 }
