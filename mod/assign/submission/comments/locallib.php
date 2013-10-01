@@ -168,15 +168,4 @@ class assign_submission_comments extends assign_submission_plugin {
     public function allow_submissions() {
         return false;
     }
-
-    /**
-     * Submission comments plugin is available if comment is enable
-     *
-     * @return bool
-     */
-    public function is_enabled() {
-        global $CFG;
-
-        return ((isset($CFG->usecomments) && $CFG->usecomments) || $this->get_config('enabled'));
-    }
 }
