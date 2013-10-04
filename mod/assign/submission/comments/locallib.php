@@ -168,4 +168,24 @@ class assign_submission_comments extends assign_submission_plugin {
     public function allow_submissions() {
         return false;
     }
+
+    /**
+     * Allows hiding this plugin from the submission screen if it is not enabled.
+     *
+     * @return bool - if false - this plugin will not show editpdf feedback
+     */
+    public function is_enabled() {
+        global $CFG;
+
+        return (!empty($CFG->usecomments));
+    }
+
+    /**
+     * Configure submission comments plugin default to usercomments configuration.
+     *
+     * @return bool
+     */
+    public function is_configurable() {
+        return false;
+    }
 }

@@ -636,4 +636,13 @@ abstract class assign_plugin {
     public function get_external_parameters() {
         return null;
     }
+
+    /**
+     * Allow the plugin's author to force the plugins to be enable.
+     *
+     * @return bool
+     */
+    public function is_configurable() {
+        return true;
+    }
 }

@@ -199,4 +199,24 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
         $DB->delete_records_select('assignfeedback_editpdf_cmnt', $gradeids, $params);
     }
 
+    /**
+     * Allows hiding this plugin from the feedback screen if it is not enabled.
+     *
+     * @return bool - if false - this plugin will not show editpdf feedback
+     */
+    public function is_enabled() {
+        $testpath = assignfeedback_editpdf\pdf::test_gs_path();
+        if ($testpath->status == assignfeedback_editpdf\pdf::GSPATH_OK) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Allow the plugin's author to force the plugins to be enable.
+     *
+     * @return bool
+     */
+    public function is_configurable() {
+        return false;
+    }
 }
